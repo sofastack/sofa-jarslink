@@ -1,0 +1,4 @@
+http\://www.springframework.org/schema/context=org.springframework.context.config.ContextNamespaceHandler
+http\://www.springframework.org/schema/p=org.springframework.beans.factory.xml.SimplePropertyNamespaceHandler
+http\://www.springframework.org/schema/util=org.springframework.beans.factory.xml.UtilNamespaceHandler
+http\://www.springframework.org/schema/aop=org.springframework.aop.config.AopNamespaceHandler
