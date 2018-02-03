@@ -1,3 +1,18 @@
+/*
+ * Copyright 1999-2018 Alibaba Group.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.alipay.titan.api;
 
 import com.google.common.collect.Lists;
@@ -26,7 +41,7 @@ public class ModuleConfig {
     public static final transient ToStringStyle DEFAULT_TO_STRING_STYLE = new DefaultToStringStyle();
 
     /**
-     * 模块名,要求用英文命名,忽略大小写
+     * 模块名,建议用英文命名,忽略大小写
      */
     private String name;
 
@@ -41,22 +56,22 @@ public class ModuleConfig {
     private Boolean enabled = true;
 
     /**
-     * 模块的版本，如1.0.0.20120609 版本变化会引起模块部署
+     * 模块的版本，如1.0.0.20120609 版本变化会触发模块重新部署
      */
     private String version;
 
     /**
-     * 模块需要的配置信息,类似于antx
+     * 模块里的BEAN需要的配置信息,集成了SPING properties
      */
     private Map<String, Object> properties = Maps.newHashMap();
 
     /**
-     * 模块自己覆盖的Class,不遵循双亲委派, 模块自己的类加载器加载这些包
+     * 模块指定需要覆盖的Class的包名,不遵循双亲委派, 模块的类加载器加载这些包
      */
     private List<String> overridePackages = Lists.newArrayList();
 
     /**
-     * JAR 包资源地址
+     * JAR 包资源地址,模块存放的地方
      */
     private List<URL> moduleUrl = Lists.newArrayList();
 
