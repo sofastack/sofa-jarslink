@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.alipay.titan</groupId>
     <artifactId>titan-api</artifactId>
-    <version>1.5.0.20171107-SNAPSHOT</version>
+    <version>1.5.0.20171107</version>
     <name>alipay titan api</name>
     <url>https://github.com/alibaba/taitan</url>
     <packaging>jar</packaging>
@@ -13,7 +13,7 @@
     <properties>
         <slf4j.version>1.7.7</slf4j.version>
         <apache.commons.lang.version>2.6</apache.commons.lang.version>
-        <org.springframework.version>4.0.0.RELEASE</org.springframework.version>
+        <org.springframework.version>4.0.2.RELEASE</org.springframework.version>
         <apache.commons.collections.version>3.2.1</apache.commons.collections.version>
     </properties>
 
@@ -81,8 +81,8 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>org.springframework.test</artifactId>
-            <version>3.0.5.RELEASE</version>
+            <artifactId>spring-test</artifactId>
+            <version>${org.springframework.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -133,6 +133,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.0</version>
                 <configuration>
                     <excludes>
                         <exclude>**/*.jar</exclude>

@@ -34,6 +34,10 @@ TITAN是一个JAVA模块化开发框架，它提供在运行时动态加载模�
 - [如何使用](https://github.com/alibaba/taitan/wiki/如何使用)
 - [实现原理](https://github.com/alibaba/taitan/wiki/实现原理)
 
+# 下载
+
+- [1.5.0.20171107版本](http://ifeve.com/wp-content/uploads/2018/02/titan-api-1.5.0.20171107.zip)
+
 
 # *License*
 
