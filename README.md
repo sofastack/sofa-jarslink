@@ -37,12 +37,12 @@ JarsLink 是一个基于JAVA的模块化开发框架，它提供在运行时动�
 
 # 下载
 
-- [1.5.0.20171107版本](http://ifeve.com/wp-content/uploads/2018/02/titan-api-1.5.0.20171107.zip)
+- [1.5.0.20171107版本](http://ifeve.com/wp-content/uploads/2018/02/jarslink.zip)
 
 
 # *License*
 
-Titan is released under the [Apache 2.0 license](license.txt).
+JarsLink is released under the [Apache 2.0 license](license.txt).
 
 ```
 Copyright 1999-2017 Alibaba Group Holding Ltd.
