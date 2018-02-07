@@ -1,0 +1,5 @@
+<div>
+	<p>vm 模板测试</P>
+	第一字段：$!dataObjectModel.getHello()<br/>
+	第二个字段: $!dataObjectModel.getWord();
+</div>
