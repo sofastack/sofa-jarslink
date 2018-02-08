@@ -1,0 +1,7 @@
+language: java
+jdk:
+  - oraclejdk8
+services:
+  - docker
+before_install:
+install: cd jarslink-api && mvn install -DskipTests=true -Dmaven.javadoc.skip=true
