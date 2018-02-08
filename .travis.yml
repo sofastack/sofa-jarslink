@@ -3,4 +3,4 @@ jdk:
   - oraclejdk8
 services:
   - docker
-script:mvn -B clean test -DjacocoReports=target/site/jacoco-aggregate/jacoco.xml cobertura:cobertura coveralls:report
+script: mvn -B clean test -DjacocoReports=target/site/jacoco-aggregate/jacoco.xml cobertura:cobertura coveralls:report
