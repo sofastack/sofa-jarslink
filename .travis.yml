@@ -4,4 +4,4 @@ jdk:
 services:
   - docker
 before_install:
-mvn -B clean test -DjacocoReports=target/site/jacoco-aggregate/jacoco.xml jacoco:report-aggregate coveralls:report
+mvn -B clean test -DjacocoReports=target/site/jacoco-aggregate/jacoco.xml cobertura:cobertura coveralls:report
