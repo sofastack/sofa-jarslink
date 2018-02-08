@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/alibaba/jarslink.svg?branch=master)](https://travis-ci.org/alibaba/jarslink)
+[![Coverage Status](https://coveralls.io/repos/github/alibaba/jarslink/badge.svg?branch=master)](https://coveralls.io/github/alibaba/jarslink?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.alicp.jetcache/jetcache-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.alicp.jetcache/jetcache-parent/)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
