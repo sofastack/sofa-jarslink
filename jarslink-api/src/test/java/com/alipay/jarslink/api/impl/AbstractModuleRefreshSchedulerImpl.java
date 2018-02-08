@@ -22,6 +22,7 @@ import com.alipay.jarslink.api.ModuleConfig;
 import java.util.List;
 
 /**
+ * 模块刷新调度器
  *
  * @author tengfei.fangtf
  * @version $Id: AbstractModuleRefreshSchedulerImpl.java, v 0.1 2017年07月21日 2:50 PM tengfei.fangtf Exp $
