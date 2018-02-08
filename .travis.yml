@@ -4,4 +4,4 @@ jdk:
 services:
   - docker
 before_install:
-install: cd jarslink-api && mvn -B -DjacocoReports=jetcache-test/target/site/jacoco-aggregate/jacoco.xml clean test jacoco:report-aggregate coveralls:report
+install: cd jarslink-api && mvn -B -DjacocoReports=/target/site/jacoco-aggregate/jacoco.xml clean test jacoco:report-aggregate coveralls:report
