@@ -42,7 +42,7 @@ JarsLink(原名Titan) 是一个基于JAVA的模块化开发框架，它提供在
 
 # *License*
 
-JarsLink is released under the [Apache 2.0 license](license.txt).
+JarsLink is released under the [Apache 2.0 license](https://github.com/alibaba/jarslink/blob/master/LICENSE).
 
 ```
 Copyright 1999-2017 Alibaba Group Holding Ltd.
