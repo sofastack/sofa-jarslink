@@ -22,6 +22,7 @@ import com.alipay.jarslink.api.ModuleConfig;
 import com.alipay.jarslink.api.ModuleLoader;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -105,10 +106,6 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     /**
      * 根据本地临时文件Jar，初始化模块自己的ClassLoader，初始化Spring Application Context，同时要设置当前线程上下文的ClassLoader问模块的ClassLoader
-     *
-     * @param moduleConfig
-     * @param tempFileJarURLs
-     * @return
      */
     private ClassPathXmlApplicationContext loadModuleApplication(ModuleConfig moduleConfig, List<String> tempFileJarURLs) {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
@@ -138,8 +135,6 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     /**
      * 获取不加载的spring配置文件名称
-     * @param properties
-     * @return
      */
     private List<String> getExclusionConfigeNameList(Properties properties) {
         String property = properties.getProperty(MODULE_EXCLUSION_CONFIGE_NAME);
@@ -152,9 +147,6 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     /**
      * 获得模块的配置，并会增加一些模块的常量信息
-     *
-     * @param moduleConfig
-     * @return
      */
     private Properties getProperties(ModuleConfig moduleConfig) {
         Properties properties = toProperties(moduleConfig.getProperties());
@@ -168,17 +160,15 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     /**
      * 查找资源(JAR)中的Spring配置文件
-     *
-     * @param tempFileJarURLs
-     * @param moduleClassLoader
-     * @return
      */
     private String[] findSpringConfigs(List<String> tempFileJarURLs, ClassLoader moduleClassLoader, List<String> exclusionConfigeNameList) {
         try {
             PathMatchingResourcePatternResolver pmr = new PathMatchingResourcePatternResolver(
                     moduleClassLoader);
-            Resource[] resources = ImmutableSet.builder().add(pmr.getResources(SPRING_XML_PATTERN)).add(
-                    pmr.getResources(SPRING_XML_PATTERN2)).build().toArray(new Resource[] {});
+            Builder<Resource> builder = ImmutableSet.builder();
+            ImmutableSet<Resource> resourcesSet = builder.add(pmr.getResources(SPRING_XML_PATTERN)).add(
+                pmr.getResources(SPRING_XML_PATTERN2)).build();
+            Resource[] resources = resourcesSet.toArray(new Resource[resourcesSet.size()]);
             checkNotNull(resources, "resources is null");
             checkArgument(resources.length > 0, "resources length is 0");
             // 因为ClassLoader是树形结构，这里会找到ModuleClassLoader以及其父类中所有符合规范的spring配置文件，所以这里需要过滤，只需要Module Jar中的
@@ -190,20 +180,14 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     /**
      * 过滤查找到的spring配置文件资源，只查找tempFileJarURLs中的spring配置文件
-     *
-     * @param tempFileJarURLs
-     * @param resources
-     * @param exclusionConfigeNameList
-     * @return
-     * @throws IOException
      */
-    private String[] filterURLsIncludedResources(List<String> tempFileJarURLs, Resource[] resources, List<String> exclusionConfigeNameList)
+    private String[] filterURLsIncludedResources(List<String> tempFileJarURLs, Resource[] resources, List<String> exclusionConfigNameList)
             throws IOException {
         List<String> configLocations = Lists.newArrayList();
         for (Resource resource : resources) {
             String configLocation = resource.getURL().toString();
             for (String url : tempFileJarURLs) {
-                if (isExclusionConfig(configLocation, exclusionConfigeNameList)) {
+                if (isExclusionConfig(configLocation, exclusionConfigNameList)) {
                     if (LOGGER.isInfoEnabled()) {
                         LOGGER.info("exclusion url: {}", configLocation);
                     }
@@ -222,10 +206,6 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     /**
      * 是否是需要不载入的spring配置
-     *
-     * @param url
-     * @param exclusionConfigeNameList
-     * @return
      */
     private boolean isExclusionConfig(String url, List<String> exclusionConfigeNameList) {
         for (String tmp : exclusionConfigeNameList) {
@@ -238,9 +218,6 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     /**
      * 去除list中的空白元素，string.startWith("")==true
-     *
-     * @param moduleConfig
-     * @return
      */
     private List<String> getOverridePackages(ModuleConfig moduleConfig) {
         List<String> list = Lists.newArrayList();
@@ -254,9 +231,6 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     /**
      * Map 转换为Properties
-     *
-     * @param map
-     * @return
      */
     private static Properties toProperties(Map<String, Object> map) {
         Properties properties = new Properties();

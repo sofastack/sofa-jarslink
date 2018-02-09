@@ -68,7 +68,7 @@ public class ModuleManagerTest {
     }
 
     @Test
-    public void shouldRegisterModule() throws MalformedURLException {
+    public void shouldRegisterModule() {
         //2:注册模块
         Module module = loadModule();
         Module removedModule = moduleManager.register(module);
@@ -129,9 +129,10 @@ public class ModuleManagerTest {
         moduleConfig.setEnabled(enabled);
         moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
         moduleConfig.setVersion("1.0.0.20170621");
-        Map<String, Object> properties = new HashMap();
+        Map<String, Object> properties = new HashMap<>();
         properties.put("url", "127.0.0.1");
         moduleConfig.setProperties(properties);
+        assert demoModule != null;
         moduleConfig.setModuleUrl(ImmutableList.of(demoModule));
         return moduleConfig;
     }

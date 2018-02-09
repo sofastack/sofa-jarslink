@@ -17,6 +17,7 @@
  */
 
 package com.alipay.jarslink.api.impl;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -57,8 +58,6 @@ public class ModuleApplicationContext extends ClassPathXmlApplicationContext {
 
     /**
      * 将模块的属性配置设置到PropertyPlaceholderConfigurer里，并把PropertyPlaceholderConfigurer注册到上下文中
-     *
-     * @param beanFactory
      */
     private void registerModulePropertiesPlaceHolderConfigurer(DefaultListableBeanFactory beanFactory) {
         //通过GenericBeanDefinition创建bean

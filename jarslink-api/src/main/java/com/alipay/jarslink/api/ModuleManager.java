@@ -30,15 +30,11 @@ public interface ModuleManager {
 
     /**
      * 根据模块名查找Module
-     * @param name
-     * @return
      */
     Module find(String name);
 
     /**
      * 获取所有已加载的Module
-     *
-     * @return
      */
     List<Module> getModules();
 
