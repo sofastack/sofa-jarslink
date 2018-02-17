@@ -5,10 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.alipay.jarslink</groupId>
     <artifactId>jarslink-api</artifactId>
-    <version>1.5.0.20171107</version>
-    <name>alipay JarsLink api</name>
+    <version>1.5.0.20180217</version>
+    <name>Alipay JarsLink API</name>
     <url>https://github.com/alibaba/jarslink</url>
     <packaging>jar</packaging>
+    <description>Alipay JarsLink API</description>
 
     <properties>
         <slf4j.version>1.7.7</slf4j.version>
@@ -24,6 +25,21 @@
         <name>Alibaba Group</name>
         <url>https://github.com/alibaba</url>
     </organization>
+
+    <developers>
+        <developer>
+            <name>jarslink</name>
+            <email>jarslink@aliyun.com</email>
+            <organization>alipay</organization>
+            <organizationUrl>www.alipay.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git@github.com:alibaba/jarslink.git</connection>
+        <developerConnection>scm:git@github.com:alibaba/jarslink.git</developerConnection>
+        <url>https://github.com/alibaba/jarslink</url>
+    </scm>
 
     <licenses>
         <license>
@@ -91,6 +107,35 @@
     </dependencies>
     <build>
         <plugins>
+            <!-- maven -->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+
+            <!-- GPG -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
@@ -220,6 +265,17 @@
             </plugin>
         </plugins>
     </build>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <name>Maven Central Staging Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
     <profiles>
 
     </profiles>
