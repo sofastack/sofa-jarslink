@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.instanceOf;
-import static com.google.common.collect.Iterables.filter;
 
 /**
  * 模块管理，包含获取模块，执行模块里的方法
@@ -47,17 +47,18 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
     /**
      * 运行时模块,模块名:模块对象
      */
-    private final ConcurrentHashMap<String, Module> modules = new ConcurrentHashMap();
+    private final ConcurrentHashMap<String, Module> modules = new ConcurrentHashMap<>();
 
     /**
      * 加载模块错误信息
      */
-    private final ConcurrentHashMap<String, String> errorContext = new ConcurrentHashMap();
+    private final ConcurrentHashMap<String, String> errorContext = new ConcurrentHashMap<>();
 
     @Override
     public List<Module> getModules() {
         return ImmutableList
-                .copyOf(filter(modules.values(), instanceOf(SpringModule.class)));
+                .copyOf(modules.values().stream().filter(instanceOf(SpringModule.class)::apply)
+                    .collect(Collectors.toList()));
     }
 
     @Override
@@ -87,7 +88,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         for (Module each : modules.values()) {
             try {
                 each.destroy();

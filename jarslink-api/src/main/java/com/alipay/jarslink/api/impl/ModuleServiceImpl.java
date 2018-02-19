@@ -56,23 +56,13 @@ public class ModuleServiceImpl implements ModuleService {
         return null;
     }
 
-    private Module removeModule(String moduleName) {
+    private void removeModule(String moduleName) {
         Module removed = moduleManager.remove(moduleName);
         destroyQuietly(removed);
-        return removed;
     }
 
     private static void destroyQuietly(Module module) {
-        if (module != null) {
-            try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Destroy module: {}", module.getName());
-                }
-                module.destroy();
-            } catch (Exception e) {
-                LOGGER.error("Failed to destroy module " + module, e);
-            }
-        }
+        Utils.destroyQuietly(module, LOGGER);
     }
 
     public void setModuleManager(ModuleManager moduleManager) {

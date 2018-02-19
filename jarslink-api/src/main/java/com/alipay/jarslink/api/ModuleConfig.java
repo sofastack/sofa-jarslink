@@ -63,7 +63,7 @@ public class ModuleConfig {
     private String version;
 
     /**
-     * 模块里的BEAN需要的配置信息,集成了SPING properties
+     * 模块里的BEAN需要的配置信息,集成了SPRING properties
      */
     private Map<String, Object> properties = Maps.newHashMap();
 
@@ -101,6 +101,7 @@ public class ModuleConfig {
         this.moduleUrl = moduleUrl;
     }
 
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(Object that) {
         return EqualsBuilder.reflectionEquals(this, that);

@@ -71,7 +71,7 @@ public class AbstractModuleRefreshSchedulerTest {
         //abstractModuleRefreshSchedulerImpl.run();
 
         //卸载模块
-        abstractModuleRefreshSchedulerImpl.setModuleConfigs(new ArrayList<ModuleConfig>());
+        abstractModuleRefreshSchedulerImpl.setModuleConfigs(new ArrayList<>());
         Assert.assertEquals(0, abstractModuleRefreshSchedulerImpl.queryModuleConfigs().size());
         abstractModuleRefreshSchedulerImpl.run();
         Assert.assertNull(moduleManager.find("demo"));

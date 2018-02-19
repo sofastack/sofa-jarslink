@@ -21,8 +21,6 @@ import com.alipay.jarslink.api.Module;
 import com.alipay.jarslink.api.ModuleManager;
 import com.alipay.jarslink.api.ModuleConfig;
 import com.alipay.jarslink.api.ModuleLoader;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.MapDifference;
@@ -85,7 +83,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
      * @see InitializingBean#afterPropertiesSet()
      */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         //先刷新一次
         refreshModuleConfigs();
         scheduledExecutor = new ScheduledThreadPoolExecutor(1,
@@ -102,7 +100,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
      * @see DisposableBean#destroy()
      */
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         if (scheduledExecutor != null) {
             scheduledExecutor.shutdownNow();
         }
@@ -129,8 +127,6 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
 
     /**
      * 获取模块配置信息
-     *
-     * @return
      */
     public abstract List<ModuleConfig> queryModuleConfigs();
 
@@ -173,21 +169,13 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
     private Collection<ModuleConfig> filterEnabledModule() {
         List<ModuleConfig> moduleConfigs = queryModuleConfigs();
         if (moduleConfigs == null || moduleConfigs.isEmpty()) {
-            return new ArrayList<ModuleConfig>();
+            return new ArrayList<>();
         }
-        return Collections2.filter(moduleConfigs, new Predicate<ModuleConfig>() {
-            @Override
-            public boolean apply(ModuleConfig moduleConfig) {
-                return moduleConfig.getEnabled();
-            }
-        });
+        return Collections2.filter(moduleConfigs, ModuleConfig::getEnabled);
     }
 
     /**
      * 根据dataProviders指定的ModuleConfig初始化模块，并放入ModuleManager中
-     *
-     * @param moduleConfigs
-     * @param moduleNames
      */
     private void putModules(Map<String, ModuleConfig> moduleConfigs, Set<String> moduleNames) {
         for (String name : moduleNames) {
@@ -220,9 +208,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
     }
 
     /**
-     *
-     * @param moduleConfig
-     * @return
+     * 是否是错误的版本
      */
     private boolean isFailedVersion(ModuleConfig moduleConfig) {
         checkNotNull(moduleConfig, "moduleConfig is null");
@@ -234,8 +220,6 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
 
     /**
      * 移除并且卸载模块
-     *
-     * @param modulesRedundant
      */
     private void removeModules(Set<String> modulesRedundant) {
         for (String moduleName : modulesRedundant) {
@@ -246,27 +230,13 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
 
     /**
      * 销毁模块，不抛出异常
-     *
-     * @param module
      */
     private static void destroyQuietly(Module module) {
-        if (module != null) {
-            try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Destroy module: {}", module.getName());
-                }
-                module.destroy();
-            } catch (Exception e) {
-                LOGGER.error("Failed to destroy module " + module, e);
-            }
-        }
+        Utils.destroyQuietly(module, LOGGER);
     }
 
     /**
      * 根据对比的结果，查找多余的模块，
-     *
-     * @param difference
-     * @return
      */
     private Set<String> modulesRedundant(MapDifference<String, String> difference) {
         return difference.entriesOnlyOnRight().keySet();
@@ -274,9 +244,6 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
 
     /**
      * 根据对比结果，查找版本不同的模块
-     *
-     * @param difference
-     * @return
      */
     private Set<String> configDifference(MapDifference<String, String> difference) {
         return difference.entriesDiffering().keySet();
@@ -284,9 +251,6 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
 
     /**
      * 根据对比结果，查找新增的模块
-     *
-     * @param difference
-     * @return
      */
     private Set<String> configAdds(MapDifference<String, String> difference) {
         return difference.entriesOnlyOnLeft().keySet();
@@ -294,55 +258,24 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
 
     /**
      * 将一个Module List，转换为Map，Key为 name，Value为Version
-     *
-     * @param modules
-     * @return
      */
     private Map<String, String> transformToModuleVersions(List<Module> modules) {
         return ImmutableMap.copyOf(transformValues(
-                Maps.uniqueIndex(modules, new Function<Module, String>() {
-                    @Override
-                    public String apply(Module input) {
-                        return input.getName();
-                    }
-                }), new Function<Module, String>() {
-                    @Override
-                    public String apply(Module input) {
-                        return input.getVersion();
-                    }
-                }));
+                Maps.uniqueIndex(modules, Module::getName), Module::getVersion));
     }
 
     /**
      * 提取Map中Value的Version，转换成新的Map，Key为name，Value为Version
-     *
-     * @param moduleConfigs
-     * @return
      */
     private Map<String, String> transformToConfigVersions(Map<String, ModuleConfig> moduleConfigs) {
-        return ImmutableMap.copyOf(transformValues(moduleConfigs,
-                new Function<ModuleConfig, String>() {
-                    @Override
-                    public String apply(ModuleConfig input) {
-                        return input.getVersion();
-                    }
-                }));
+        return ImmutableMap.copyOf(transformValues(moduleConfigs, ModuleConfig::getVersion));
     }
 
     /**
      * 将ModuleConfig List转换成为Map，Key为name，Value为ModuleConfig
-     *
-     * @param list
-     * @return
      */
     private Map<String, ModuleConfig> indexModuleConfigByModuleName(Collection<ModuleConfig> list) {
-
-        return ImmutableMap.copyOf(Maps.uniqueIndex(list, new Function<ModuleConfig, String>() {
-            @Override
-            public String apply(ModuleConfig input) {
-                return input.getName();
-            }
-        }));
+        return ImmutableMap.copyOf(Maps.uniqueIndex(list, ModuleConfig::getName));
     }
 
     @Required
