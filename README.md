@@ -46,7 +46,8 @@ JarsLink (原名Titan) 是一个基于JAVA的模块化开发框架，它提供�
 
 ## 动态性
 
-模块可以在运行时动态加载到系统中，实现不需要重启和发布系统就能新增功能，修改BUG。支持突破双亲委派机制，在运行时加载父加载器已经加载过的类，实现模块升级依赖包不需要系统发布。
+- 动态发布：模块能在运行时动态加载到系统中，实现不需要重启和发布系统新增功能。支持突破双亲委派机制，在运行时加载父加载器已经加载过的类，实现模块升级依赖包不需要系统发布。
+- 动态卸载：模块能在运行时被动态卸载干净，实现快速下线不需要功能。
 
 ## 易用性
 
@@ -56,10 +57,14 @@ JarsLink (原名Titan) 是一个基于JAVA的模块化开发框架，它提供�
 
 - [如何使用](https://github.com/alibaba/taitan/wiki/如何使用)
 - [实现原理](https://github.com/alibaba/taitan/wiki/实现原理)
+- [应用场景](https://github.com/alibaba/taitan/wiki/应用场景)
+- [高级特性](https://github.com/alibaba/taitan/wiki/高级特性)
+
 
 # 下载
 
 - [1.5.0.20171107版本](http://ifeve.com/wp-content/uploads/2018/02/jarslink.zip)
+- [更多版本](https://oss.sonatype.org/#nexus-search;quick~com.alipay.jarslink)
 
 
 # *License*
