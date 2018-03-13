@@ -103,7 +103,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         }
 
         //设置默认版本
-        if (!defaultVersions.contains(getModuleName(name))) {
+        if (!defaultVersions.containsKey(getModuleName(name))) {
             activeVersion(name, module.getVersion());
         }
 
