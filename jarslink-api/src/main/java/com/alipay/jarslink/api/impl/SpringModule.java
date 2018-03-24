@@ -157,7 +157,7 @@ public class SpringModule implements Module {
             ClassLoader moduleClassLoader = action.getClass().getClassLoader();
             Thread.currentThread().setContextClassLoader(moduleClassLoader);
             return action.execute(actionRequest);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.error("调用模块出现异常,action=" + action, e);
             throw new ModuleRuntimeException("doActionWithinModuleClassLoader has error,action=" + action, e);
         } finally {
