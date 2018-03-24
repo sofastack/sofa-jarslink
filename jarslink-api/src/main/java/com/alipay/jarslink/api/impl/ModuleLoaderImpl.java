@@ -40,11 +40,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
 import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /**
  * 模块加载器实现
@@ -59,7 +61,7 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
     /**
      * Spring bean文件所在目录
      */
-    public static String SPRING_XML_PATTERN  = "classpath*:META-INF/spring/*.xml";
+    public static String SPRING_XML_PATTERN = "classpath*:META-INF/spring/*.xml";
     /**
      * Spring bean文件所在目录,不同的路径确保能取到资源
      */
@@ -100,7 +102,8 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Loading module  complete：{}", moduleConfig);
         }
-        return new SpringModule(moduleConfig, moduleConfig.getVersion(), moduleConfig.getName(), moduleApplicationContext);
+        return new SpringModule(moduleConfig, moduleConfig.getVersion(), moduleConfig.getName(),
+                moduleApplicationContext);
     }
 
     /**
@@ -110,11 +113,12 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      * @param tempFileJarURLs
      * @return
      */
-    private ClassPathXmlApplicationContext loadModuleApplication(ModuleConfig moduleConfig, List<String> tempFileJarURLs) {
+    private ClassPathXmlApplicationContext loadModuleApplication(ModuleConfig moduleConfig, List<String>
+            tempFileJarURLs) {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
         //获取模块的ClassLoader
-        ClassLoader moduleClassLoader = new ModuleClassLoader(moduleConfig.getModuleUrl(), applicationContext.getClassLoader(),
-                getOverridePackages(moduleConfig));
+        ClassLoader moduleClassLoader = new ModuleClassLoader(moduleConfig.getModuleUrl(), applicationContext
+                .getClassLoader(), getOverridePackages(moduleConfig));
 
         try {
             //把当前线程的ClassLoader切换成模块的
@@ -138,6 +142,7 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     /**
      * 获取不加载的spring配置文件名称
+     *
      * @param properties
      * @return
      */
@@ -173,12 +178,12 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      * @param moduleClassLoader
      * @return
      */
-    private String[] findSpringConfigs(List<String> tempFileJarURLs, ClassLoader moduleClassLoader, List<String> exclusionConfigeNameList) {
+    private String[] findSpringConfigs(List<String> tempFileJarURLs, ClassLoader moduleClassLoader, List<String>
+            exclusionConfigeNameList) {
         try {
-            PathMatchingResourcePatternResolver pmr = new PathMatchingResourcePatternResolver(
-                    moduleClassLoader);
-            Resource[] resources = ImmutableSet.builder().add(pmr.getResources(SPRING_XML_PATTERN)).add(
-                    pmr.getResources(SPRING_XML_PATTERN2)).build().toArray(new Resource[] {});
+            PathMatchingResourcePatternResolver pmr = new PathMatchingResourcePatternResolver(moduleClassLoader);
+            Resource[] resources = ImmutableSet.builder().add(pmr.getResources(SPRING_XML_PATTERN)).add(pmr
+                    .getResources(SPRING_XML_PATTERN2)).build().toArray(new Resource[]{});
             checkNotNull(resources, "resources is null");
             checkArgument(resources.length > 0, "resources length is 0");
             // 因为ClassLoader是树形结构，这里会找到ModuleClassLoader以及其父类中所有符合规范的spring配置文件，所以这里需要过滤，只需要Module Jar中的
@@ -197,8 +202,8 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      * @return
      * @throws IOException
      */
-    private String[] filterURLsIncludedResources(List<String> tempFileJarURLs, Resource[] resources, List<String> exclusionConfigeNameList)
-            throws IOException {
+    private String[] filterURLsIncludedResources(List<String> tempFileJarURLs, Resource[] resources, List<String>
+            exclusionConfigeNameList) throws IOException {
         List<String> configLocations = Lists.newArrayList();
         for (Resource resource : resources) {
             String configLocation = resource.getURL().toString();
@@ -228,12 +233,7 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      * @return
      */
     private boolean isExclusionConfig(String url, List<String> exclusionConfigeNameList) {
-        for (String tmp : exclusionConfigeNameList) {
-            if (url.contains(tmp)) {
-                return true;
-            }
-        }
-        return false;
+        return exclusionConfigeNameList.stream().filter(url::contains).limit(1).count() > 0;
     }
 
     /**
@@ -244,11 +244,7 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      */
     private List<String> getOverridePackages(ModuleConfig moduleConfig) {
         List<String> list = Lists.newArrayList();
-        for (String s : moduleConfig.getOverridePackages()) {
-            if (!StringUtils.isBlank(s)) {
-                list.add(s);
-            }
-        }
+        moduleConfig.getOverridePackages().stream().filter(StringUtils::isNotBlank).forEach(list::add);
         return list;
     }
 
@@ -260,18 +256,15 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      */
     private static Properties toProperties(Map<String, Object> map) {
         Properties properties = new Properties();
-        for (Entry<String, Object> each : map.entrySet()) {
-            if (each.getKey() == null || each.getValue() == null) {
+        map.forEach((k, v) -> {
+            if (k == null || v == null) {
                 if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("Ignore null properties: {}={}", each.getKey(), each.getValue());
+                    LOGGER.warn("Ignore null properties: {}={}", k, v);
                 }
-                continue;
+            }else if(isNotBlank(k)){
+                properties.setProperty(k , v.toString());
             }
-            if (isBlank(each.getKey())) {
-                continue;
-            }
-            properties.setProperty(each.getKey(), each.getValue().toString());
-        }
+        });
         return properties;
     }
 

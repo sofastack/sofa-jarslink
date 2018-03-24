@@ -76,13 +76,7 @@ public class SpringModule implements Module {
         this.version = version;
         this.name = name;
         this.creation = new Date();
-        this.actions = scanActions(applicationContext, Action.class,
-                new Function<Action, String>() {
-                    @Override
-                    public String apply(Action input) {
-                        return input.getActionName();
-                    }
-                });
+        this.actions = scanActions(applicationContext, Action.class, Action::getActionName);
     }
 
     /**
@@ -157,7 +151,7 @@ public class SpringModule implements Module {
             ClassLoader moduleClassLoader = action.getClass().getClassLoader();
             Thread.currentThread().setContextClassLoader(moduleClassLoader);
             return action.execute(actionRequest);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.error("调用模块出现异常,action=" + action, e);
             throw new ModuleRuntimeException("doActionWithinModuleClassLoader has error,action=" + action, e);
         } finally {
