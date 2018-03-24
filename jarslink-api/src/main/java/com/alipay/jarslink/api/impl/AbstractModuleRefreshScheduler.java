@@ -196,7 +196,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
                 }
                 Module module = moduleLoader.load(moduleConfig);
                 Module removed = moduleManager.register(module);
-                destroyQuietly(removed);
+                ModuleTool.destroyQuietly(removed);
                 moduleManager.getErrorModuleContext().remove(name.toUpperCase(Locale.CHINESE));
                 moduleManager.getErrorModuleContext().remove(name.toUpperCase(Locale.CHINESE) + "_ERROR");
             } catch (Exception e) {
@@ -230,25 +230,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
     private void removeModules(Set<String> modulesRedundant) {
         for (String moduleName : modulesRedundant) {
             Module removed = moduleManager.remove(moduleName);
-            destroyQuietly(removed);
-        }
-    }
-
-    /**
-     * 销毁模块，不抛出异常
-     *
-     * @param module
-     */
-    private static void destroyQuietly(Module module) {
-        if (module != null) {
-            try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Destroy module: {}", module.getName());
-                }
-                module.destroy();
-            } catch (Exception e) {
-                LOGGER.error("Failed to destroy module " + module, e);
-            }
+            ModuleTool.destroyQuietly(removed);
         }
     }
 

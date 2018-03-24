@@ -47,7 +47,7 @@ public class ModuleServiceImpl implements ModuleService {
         if (moduleConfig.getEnabled()) {
             Module module = moduleLoader.load(moduleConfig);
             Module oldModule = moduleManager.register(module);
-            destroyQuietly(oldModule);
+            ModuleTool.destroyQuietly(oldModule);
             return module;
         }
 
@@ -58,21 +58,8 @@ public class ModuleServiceImpl implements ModuleService {
 
     private Module removeModule(String moduleName) {
         Module removed = moduleManager.remove(moduleName);
-        destroyQuietly(removed);
+        ModuleTool.destroyQuietly(removed);
         return removed;
-    }
-
-    private static void destroyQuietly(Module module) {
-        if (module != null) {
-            try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Destroy module: {}", module.getName());
-                }
-                module.destroy();
-            } catch (Exception e) {
-                LOGGER.error("Failed to destroy module " + module, e);
-            }
-        }
     }
 
     public void setModuleManager(ModuleManager moduleManager) {
