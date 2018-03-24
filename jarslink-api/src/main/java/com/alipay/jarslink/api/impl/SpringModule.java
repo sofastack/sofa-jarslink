@@ -76,13 +76,7 @@ public class SpringModule implements Module {
         this.version = version;
         this.name = name;
         this.creation = new Date();
-        this.actions = scanActions(applicationContext, Action.class,
-                new Function<Action, String>() {
-                    @Override
-                    public String apply(Action input) {
-                        return input.getActionName();
-                    }
-                });
+        this.actions = scanActions(applicationContext, Action.class, Action::getActionName);
     }
 
     /**

@@ -17,6 +17,7 @@
  */
 
 package com.alipay.jarslink.api.impl;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -42,7 +43,9 @@ public class ModuleApplicationContext extends ClassPathXmlApplicationContext {
      */
     public static final String MODULE_PROPERTY_PLACEHOLDER_CONFIGURER = "modulePropertyPlaceholderConfigurer";
 
-    /** 模块属性 */
+    /**
+     * 模块属性
+     */
     private Properties properties = new Properties();
 
     public ModuleApplicationContext(ApplicationContext parent) {

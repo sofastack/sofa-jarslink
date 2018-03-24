@@ -18,11 +18,9 @@
 package com.alipay.jarslink.api.impl;
 
 import com.alipay.jarslink.api.Module;
-import com.alipay.jarslink.api.ModuleManager;
 import com.alipay.jarslink.api.ModuleConfig;
 import com.alipay.jarslink.api.ModuleLoader;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
+import com.alipay.jarslink.api.ModuleManager;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.MapDifference;
@@ -35,12 +33,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -56,8 +49,7 @@ import static com.google.common.collect.Maps.transformValues;
  */
 public abstract class AbstractModuleRefreshScheduler implements InitializingBean, DisposableBean, Runnable {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(AbstractModuleRefreshScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractModuleRefreshScheduler.class);
 
     /**
      * 默认延迟执行,单位秒
@@ -69,15 +61,19 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
      */
     private static final int DEFAULT_REFRESH_DELAY = 60;
 
-    /** 初始化的延迟时间 */
+    /**
+     * 初始化的延迟时间
+     */
     private int initialDelay = DEFAULT_INITIAL_DELAY;
 
-    /** 刷新间隔时间 */
+    /**
+     * 刷新间隔时间
+     */
     private int refreshDelay = DEFAULT_REFRESH_DELAY;
 
     private ScheduledExecutorService scheduledExecutor;
-    private ModuleManager            moduleManager;
-    private ModuleLoader             moduleLoader;
+    private ModuleManager moduleManager;
+    private ModuleLoader moduleLoader;
 
     /**
      * 初始化ScheduledExecutor，启动定时任务，扫描数据库的ModuleConfig，并根据逻辑判断启动和卸载模块
@@ -88,10 +84,9 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
     public void afterPropertiesSet() throws Exception {
         //先刷新一次
         refreshModuleConfigs();
-        scheduledExecutor = new ScheduledThreadPoolExecutor(1,
-                new BasicThreadFactory.Builder().namingPattern("module_refresh-schedule-pool-%d").daemon(true).build());
-        scheduledExecutor
-                .scheduleWithFixedDelay(this, initialDelay, refreshDelay, TimeUnit.SECONDS);
+        scheduledExecutor = new ScheduledThreadPoolExecutor(1, new BasicThreadFactory.Builder().namingPattern
+                ("module_refresh-schedule-pool-%d").daemon(true).build());
+        scheduledExecutor.scheduleWithFixedDelay(this, initialDelay, refreshDelay, TimeUnit.SECONDS);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("AbstractModuleRefreshScheduler start");
         }
@@ -99,6 +94,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
 
     /**
      * 关闭ScheduledExecutor
+     *
      * @see DisposableBean#destroy()
      */
     @Override
@@ -110,6 +106,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
 
     /**
      * ScheduledExecutor 定时运行的方法
+     *
      * @see Runnable#run()
      */
     @Override
@@ -173,14 +170,9 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
     private Collection<ModuleConfig> filterEnabledModule() {
         List<ModuleConfig> moduleConfigs = queryModuleConfigs();
         if (moduleConfigs == null || moduleConfigs.isEmpty()) {
-            return new ArrayList<ModuleConfig>();
+            return new ArrayList<>();
         }
-        return Collections2.filter(moduleConfigs, new Predicate<ModuleConfig>() {
-            @Override
-            public boolean apply(ModuleConfig moduleConfig) {
-                return moduleConfig.getEnabled();
-            }
-        });
+        return Collections2.filter(moduleConfigs, ModuleConfig::getEnabled);
     }
 
     /**
@@ -210,8 +202,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
             } catch (Exception e) {
                 moduleManager.getErrorModuleContext().put(name.toUpperCase(Locale.CHINESE) + "_ERROR",
                         ToStringBuilder.reflectionToString(e));
-                moduleManager.getErrorModuleContext().put(name.toUpperCase(Locale.CHINESE),
-                        moduleConfig.getVersion());
+                moduleManager.getErrorModuleContext().put(name.toUpperCase(Locale.CHINESE), moduleConfig.getVersion());
                 LOGGER.error("Failed to load module config: " + moduleConfig, e);
             } catch (Error e) {
                 LOGGER.error("Failed to load module config: " + moduleConfig, e);
@@ -220,7 +211,6 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
     }
 
     /**
-     *
      * @param moduleConfig
      * @return
      */
@@ -299,18 +289,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
      * @return
      */
     private Map<String, String> transformToModuleVersions(List<Module> modules) {
-        return ImmutableMap.copyOf(transformValues(
-                Maps.uniqueIndex(modules, new Function<Module, String>() {
-                    @Override
-                    public String apply(Module input) {
-                        return input.getName();
-                    }
-                }), new Function<Module, String>() {
-                    @Override
-                    public String apply(Module input) {
-                        return input.getVersion();
-                    }
-                }));
+        return ImmutableMap.copyOf(transformValues(Maps.uniqueIndex(modules, Module::getName), Module::getVersion));
     }
 
     /**
@@ -320,13 +299,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
      * @return
      */
     private Map<String, String> transformToConfigVersions(Map<String, ModuleConfig> moduleConfigs) {
-        return ImmutableMap.copyOf(transformValues(moduleConfigs,
-                new Function<ModuleConfig, String>() {
-                    @Override
-                    public String apply(ModuleConfig input) {
-                        return input.getVersion();
-                    }
-                }));
+        return ImmutableMap.copyOf(transformValues(moduleConfigs, ModuleConfig::getVersion));
     }
 
     /**
@@ -336,13 +309,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
      * @return
      */
     private Map<String, ModuleConfig> indexModuleConfigByModuleName(Collection<ModuleConfig> list) {
-
-        return ImmutableMap.copyOf(Maps.uniqueIndex(list, new Function<ModuleConfig, String>() {
-            @Override
-            public String apply(ModuleConfig input) {
-                return input.getName();
-            }
-        }));
+        return ImmutableMap.copyOf(Maps.uniqueIndex(list, ModuleConfig::getName));
     }
 
     @Required
