@@ -37,12 +37,10 @@ import static com.google.common.collect.Iterables.filter;
  * 模块管理，包含获取模块，执行模块里的方法
  *
  * @author tengfei.fangtf
- *
  */
 public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(ModuleManagerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModuleManagerImpl.class);
 
     /**
      * 运行时模块,模块名:模块对象
@@ -56,8 +54,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
     @Override
     public List<Module> getModules() {
-        return ImmutableList
-                .copyOf(filter(modules.values(), instanceOf(SpringModule.class)));
+        return ImmutableList.copyOf(filter(modules.values(), instanceOf(SpringModule.class)));
     }
 
     @Override
@@ -88,13 +85,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
     @Override
     public void destroy() throws Exception {
-        for (Module each : modules.values()) {
-            try {
-                each.destroy();
-            } catch (Exception e) {
-                LOGGER.error("Failed to destroy module: " + each.getName(), e);
-            }
-        }
+        modules.values().forEach(ModuleTools::destroyQuietly);
         modules.clear();
     }
 
