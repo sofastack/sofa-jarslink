@@ -58,7 +58,7 @@ public class AbstractModuleRefreshSchedulerTest {
     @Test
     public void shouldAddModule() {
         //装载模块
-        abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(ModuleManagerTest.buildModuleConfig()));
+        abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(ModuleManagerTest.buildModuleConfig(false)));
         Assert.assertEquals(1, abstractModuleRefreshSchedulerImpl.queryModuleConfigs().size());
         abstractModuleRefreshSchedulerImpl.run();
         Module demo = moduleManager.find("demo");
@@ -81,7 +81,7 @@ public class AbstractModuleRefreshSchedulerTest {
     @Test
     public void shouldUpdateModule() {
         //装载模块
-        abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(ModuleManagerTest.buildModuleConfig()));
+        abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(ModuleManagerTest.buildModuleConfig(false)));
         Assert.assertEquals(1, abstractModuleRefreshSchedulerImpl.queryModuleConfigs().size());
         abstractModuleRefreshSchedulerImpl.run();
         Module demo = moduleManager.find("demo");
