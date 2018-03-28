@@ -50,7 +50,7 @@ public class ModuleServiceTest {
         Assert.assertEquals(moduleConfig.getVersion(), module.getVersion());
 
         //再禁用模块
-        module = moduleService.loadAndRegister(ModuleManagerTest.buildModuleConfig(false));
+        module = moduleService.loadAndRegister(ModuleManagerTest.buildModuleConfig(false, false));
         Assert.assertNull(module);
 
     }
