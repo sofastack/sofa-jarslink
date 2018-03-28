@@ -27,9 +27,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- *
  * 模块配置信息
  *
  * @author tengfei.fangtf
@@ -56,6 +59,11 @@ public class ModuleConfig {
      * 是否启用模块,默认启用
      */
     private Boolean enabled = true;
+
+    /**
+     * spring扫描注解的包，当该set不为空时启动包扫描，将自动扫描注解形式的bean
+     */
+    private Set<String> scanPackages = new CopyOnWriteArraySet<String>();
 
     /**
      * 模块的版本，如1.0.0.20120609 版本变化会触发模块重新部署
@@ -122,6 +130,37 @@ public class ModuleConfig {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * 添加spring scan-base-package配置
+     *
+     * @param packageName 要添加的spring scan-base-package配置
+     */
+    public void addScanPackage(String packageName) {
+        //不验证空字符串
+        checkNotNull(packageName, "packageName must not be null");
+        scanPackages.add(packageName);
+    }
+
+    /**
+     * 移除指定现有的spring scan-base-package
+     *
+     * @param packageName 要移除的之前配置的spring scan-base-package
+     */
+    public void removeScanPackage(String packageName) {
+        //不验证空字符串
+        checkNotNull(packageName, "packageName must not be null");
+        scanPackages.remove(packageName);
+    }
+
+    /**
+     * 获取spring scan-base-package集合
+     *
+     * @return spring scan-base-package的集合
+     */
+    public Set<String> getScanPackages() {
+        return scanPackages;
     }
 
     public ModuleConfig withEnabled(Boolean enabled) {

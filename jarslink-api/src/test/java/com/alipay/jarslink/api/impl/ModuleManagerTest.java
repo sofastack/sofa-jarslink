@@ -40,10 +40,9 @@ import java.util.Map;
  *
  * @author tengfei.fangtf
  * @version $Id: ModuleManagerTest.java
- *
+ * <p>
  * v 0.1 2017年06月20日 3:24 PM tengfei.fangtf Exp $
- *
- * */
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath*:META-INF/spring/jarslink.xml"})
 public class ModuleManagerTest {
@@ -57,7 +56,7 @@ public class ModuleManagerTest {
     @Test
     public void shouldLoadModule() {
         //1:加载模块
-        Module module = loadModule();
+        Module module = loadModule(false);
         Assert.assertNotNull(module);
         Assert.assertNotNull(module.getCreation());
         Assert.assertNotNull(module.getChildClassLoader());
@@ -70,7 +69,7 @@ public class ModuleManagerTest {
     @Test
     public void shouldRegisterModule() throws MalformedURLException {
         //2:注册模块
-        Module module = loadModule();
+        Module module = loadModule(false);
         Module removedModule = moduleManager.register(module);
         Assert.assertNull(removedModule);
 
@@ -88,8 +87,55 @@ public class ModuleManagerTest {
     }
 
     @Test
-    public void shouldDoAction() {
-        Module findModule = loadModule();
+    public void shouldDoActionByXml() {
+        shouldDoAction(false);
+    }
+
+    @Test
+    public void shouldDoActionByAnnotation() {
+        shouldDoAction(true);
+    }
+
+    /**
+     * 构建模块配置信息
+     */
+    public static ModuleConfig buildModuleConfig(boolean annotation) {
+        return buildModuleConfig(true, annotation);
+    }
+
+    public static ModuleConfig buildModuleConfig(boolean enabled, boolean annotation) {
+        URL demoModule;
+        ModuleConfig moduleConfig = new ModuleConfig();
+        String scanBase = "com.alipay.jarslink.main";
+        moduleConfig.addScanPackage(scanBase);
+        if (annotation) {
+            //增加spring扫描配置，自动发现注解形式的bean
+            demoModule = Thread.currentThread().getContextClassLoader().getResource
+//                    ("jarslink-module-demo-annotation-1.0.0.jar");
+                    ("jarslink-module-demo-annotation-1.0.0.jar");
+        } else {
+            moduleConfig.removeScanPackage(scanBase);
+            demoModule = Thread.currentThread().getContextClassLoader().getResource
+                    ("jarslink-module-demo-xml-1.0.0.jar");
+        }
+
+        moduleConfig.setName("demo");
+        moduleConfig.setEnabled(enabled);
+        moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
+        moduleConfig.setVersion("1.0.0.20170621");
+        Map<String, Object> properties = new HashMap();
+        properties.put("url", "127.0.0.1");
+        moduleConfig.setProperties(properties);
+        moduleConfig.setModuleUrl(ImmutableList.of(demoModule));
+        return moduleConfig;
+    }
+
+    private Module loadModule(boolean annotation) {
+        return moduleLoader.load(buildModuleConfig(annotation));
+    }
+
+    private void shouldDoAction(boolean annotation) {
+        Module findModule = loadModule(annotation);
         Module removedModule = moduleManager.register(findModule);
         //4.1:查找和执行Action
 
@@ -114,28 +160,4 @@ public class ModuleManagerTest {
         //卸载模块
         moduleManager.remove(findModule.getName());
     }
-
-    /**
-     * 构建模块配置信息
-     */
-    public static ModuleConfig buildModuleConfig() {
-        return buildModuleConfig(true);
-    }
-
-    public static ModuleConfig buildModuleConfig(boolean enabled) {
-        URL demoModule = Thread.currentThread().getContextClassLoader().getResource("jarslink-module-demo-1.0.0.jar");
-        ModuleConfig moduleConfig = new ModuleConfig();
-        moduleConfig.setName("demo");
-        moduleConfig.setEnabled(enabled);
-        moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
-        moduleConfig.setVersion("1.0.0.20170621");
-        Map<String, Object> properties = new HashMap();
-        properties.put("url", "127.0.0.1");
-        moduleConfig.setProperties(properties);
-        moduleConfig.setModuleUrl(ImmutableList.of(demoModule));
-        return moduleConfig;
-    }
-
-    private Module loadModule() {return moduleLoader.load(buildModuleConfig());}
-
 }
