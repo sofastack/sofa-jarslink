@@ -25,11 +25,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- *
  * 模块配置信息
  *
  * @author tengfei.fangtf
@@ -56,6 +54,11 @@ public class ModuleConfig {
      * 是否启用模块,默认启用
      */
     private Boolean enabled = true;
+
+    /**
+     * spring扫描注解的包，当该set不为空时启动包扫描，将自动扫描注解形式的bean
+     */
+    private Set<String> scanBase = new HashSet<>(5);
 
     /**
      * 模块的版本，如1.0.0.20120609 版本变化会触发模块重新部署
@@ -122,6 +125,24 @@ public class ModuleConfig {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void addScanBase(String packageName) {
+        if (packageName == null || "".equals(packageName.trim())) {
+            return;
+        }
+        scanBase.add(packageName);
+    }
+
+    public void removeScanBase(String packageName) {
+        if (packageName == null || "".equals(packageName.trim()) || scanBase.isEmpty()) {
+            return;
+        }
+        scanBase.remove(packageName);
+    }
+
+    public Set<String> getScanBase() {
+        return scanBase;
     }
 
     public ModuleConfig withEnabled(Boolean enabled) {
