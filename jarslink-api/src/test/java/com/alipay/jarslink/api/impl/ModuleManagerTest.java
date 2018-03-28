@@ -106,12 +106,14 @@ public class ModuleManagerTest {
     public static ModuleConfig buildModuleConfig(boolean enabled, boolean annotation) {
         URL demoModule;
         ModuleConfig moduleConfig = new ModuleConfig();
+        String scanBase = "com.alipay.jarslink.demo";
+        moduleConfig.addScanBase(scanBase);
         if (annotation) {
             //增加spring扫描配置，自动发现注解形式的bean
-            moduleConfig.addScanBase("com.alipay.jarslink.demo");
             demoModule = Thread.currentThread().getContextClassLoader().getResource
                     ("jarslink-module-demo-annotation-1.0.0.jar");
         } else {
+            moduleConfig.removeScanBase(scanBase);
             demoModule = Thread.currentThread().getContextClassLoader().getResource
                     ("jarslink-module-demo-xml-1.0.0.jar");
         }
