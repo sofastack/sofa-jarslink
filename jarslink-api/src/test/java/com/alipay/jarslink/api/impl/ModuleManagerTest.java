@@ -93,6 +93,13 @@ public class ModuleManagerTest {
         shouldDoAction("jarslink-module-demo-1.0.0.jar", "overrideTestBeanAction");
     }
 
+    @Test
+    public void loadTest() {
+        ModuleConfig config = buildModuleConfig("jarslink-module-demo-1.0.0.jar");
+        config.addScanPackage("com.alipay.jarslink.main");
+        moduleLoader.load(config);
+    }
+
     /**
      * 构建模块配置信息
      */
@@ -106,15 +113,18 @@ public class ModuleManagerTest {
         //通过该方法构建的配置都是使用注解形式扫描bean的
         String scanBase = "com.alipay.jarslink.main";
         moduleConfig.addScanPackage(scanBase);
+        moduleConfig.removeScanPackage(scanBase);
+        Map<String, Object> properties = new HashMap();
+        moduleConfig.withEnabled(enabled).withVersion("1.0.0.20170621").withOverridePackages(ImmutableList.of("com" +
+                ".alipay.jarslink.demo")).withProperties(properties);
         demoModule = Thread.currentThread().getContextClassLoader().getResource(moudulePath);
 
 //        不允许突破双亲委派，如果允许需要修改Assert.assertEquals(result, "parent:hello");为Assert.assertEquals(result, "hello");
-//        moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
+        moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
 
         moduleConfig.setName("demo");
         moduleConfig.setEnabled(enabled);
         moduleConfig.setVersion("1.0.0.20170621");
-        Map<String, Object> properties = new HashMap();
         properties.put("url", "127.0.0.1");
         moduleConfig.setProperties(properties);
         moduleConfig.setModuleUrl(ImmutableList.of(demoModule));
@@ -133,7 +143,7 @@ public class ModuleManagerTest {
         if ("overrideTestBeanAction".equals(actionName)) {
             //测试覆写bean
             String result = shouldDoAction(modulePath, actionName, "hello");
-            Assert.assertEquals(result, "parent:hello");
+            Assert.assertEquals(result, "hello");
         } else {
             ModuleConfig moduleConfig = new ModuleConfig();
             moduleConfig.setName("h");
@@ -161,11 +171,11 @@ public class ModuleManagerTest {
     /**
      * 执行action
      *
-     * @param modulePath     模块位置
-     * @param actionName     action name
-     * @param param          调用参数
-     * @param <T>            参数类型
-     * @param <R>            结果类型
+     * @param modulePath 模块位置
+     * @param actionName action name
+     * @param param      调用参数
+     * @param <T>        参数类型
+     * @param <R>        结果类型
      * @return 调用结果
      */
     private <T, R> R shouldDoAction(String modulePath, String actionName, T param) {
