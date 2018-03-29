@@ -84,7 +84,7 @@ public class AbstractModuleRefreshSchedulerTest {
     public void shouldUpdateModule() {
         //装载模块
         abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(ModuleManagerTest.buildModuleConfig
-                (true, "jarslink-module-demo-1.0.0.jar", false)));
+                (true, "jarslink-module-demo-1.0.0.jar")));
         Assert.assertEquals(1, abstractModuleRefreshSchedulerImpl.queryModuleConfigs().size());
         abstractModuleRefreshSchedulerImpl.run();
         Module demo = moduleManager.find("demo");
@@ -92,7 +92,7 @@ public class AbstractModuleRefreshSchedulerTest {
 
         //修改模块
         ModuleConfig moduleConfig = ModuleManagerTest.buildModuleConfig(true,
-                "jarslink-module-demo-1.0.0.jar", false);
+                "jarslink-module-demo-1.0.0.jar");
         moduleConfig.setVersion("1.1");
         abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(moduleConfig));
         abstractModuleRefreshSchedulerImpl.run();

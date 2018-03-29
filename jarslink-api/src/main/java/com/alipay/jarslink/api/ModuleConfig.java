@@ -61,26 +61,6 @@ public class ModuleConfig {
     private Boolean enabled = true;
 
     /**
-     * 如果bean重复或者模块中缺少bean是否允许使用当前容器中的bean替换模块中的bean，false表示不允许，默认不允许
-     * <p>
-     * <p>
-     * <h3>使用场景：</h3>
-     * <li>场景一：当前进程load一个模块A，模块A中有一个bean的定义与当前进程中的bean定义一致，此时如果设置该值为true的话将会
-     * 使用当前进程的bean替换模块A中的bean。</li>
-     * <p>
-     * <li>场景二：当前进程load一个模块A，模块A中有一个依赖bean需要注入，但是模块A并没有提供该bean，而当前进程中有该bean，此时
-     * 就可以使用当前进程的bean注入模块中使用。</li>
-     * <p>
-     * <h3>优势：</h3>
-     * <li>开启该选项后一些公共bean可以由主进程加载而不用每个进程都加载，使用方式与引入servlet-api类似，只需将bean定义引入编
-     * 译期即可（maven设置依赖scope为provide即可），节省内存，同时对于一些特殊bean可以防止模块重写而造成一些问题。</li>
-     * <p>
-     * <h3>风险：</h3>
-     * <li>该功能启用未全面测试，仅进行简单的测试，可能会有一定未知风险，同时在某些场景可能会存在安全风险，请谨慎使用。</li>
-     */
-    private boolean enableOverrideModuleBean = false;
-
-    /**
      * spring扫描注解的包，当该set不为空时启动包扫描，将自动扫描注解形式的bean
      */
     private Set<String> scanPackages = new CopyOnWriteArraySet<String>();
@@ -97,6 +77,8 @@ public class ModuleConfig {
 
     /**
      * 模块指定需要覆盖的Class的包名,不遵循双亲委派, 模块的类加载器加载这些包
+     * <p>
+     * 如果子模块中加载不到那么仍然会到父容器中加载
      */
     private List<String> overridePackages = Lists.newArrayList();
 
@@ -150,24 +132,6 @@ public class ModuleConfig {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    /**
-     * 获取当前系统是否允许使用当前进程的bean覆盖模块的bean
-     *
-     * @return 返回true表示允许
-     */
-    public boolean getEnableOverrideModuleBean() {
-        return enableOverrideModuleBean;
-    }
-
-    /**
-     * 设置是否允许使用当前进程的bean覆盖模块的bean
-     *
-     * @param enableOverrideModuleBean true表示允许，默认false，详细说明参照字段注释
-     */
-    public void setEnableOverrideModuleBean(boolean enableOverrideModuleBean) {
-        this.enableOverrideModuleBean = enableOverrideModuleBean;
     }
 
     /**

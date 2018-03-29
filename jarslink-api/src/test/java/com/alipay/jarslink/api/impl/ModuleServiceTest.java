@@ -51,7 +51,7 @@ public class ModuleServiceTest {
 
         //再禁用模块
         module = moduleService.loadAndRegister(ModuleManagerTest.buildModuleConfig(false,
-                "jarslink-module-demo-1.0.0.jar", false));
+                "jarslink-module-demo-1.0.0.jar"));
         Assert.assertNull(module);
 
     }
