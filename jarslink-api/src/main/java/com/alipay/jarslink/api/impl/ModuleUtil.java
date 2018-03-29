@@ -10,7 +10,7 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 import java.util.Properties;
 
 /**
- *  模块工具类
+ * 模块工具类
  *
  * @author joe
  * @version 2018.03.28 23:13
@@ -26,8 +26,7 @@ public class ModuleUtil {
      *
      * @param beanFactory
      */
-    static BeanDefinitionRegistry registerModulePropertiesPlaceHolderConfigurer(BeanDefinitionRegistry
-                                                                                        beanFactory,
+    static BeanDefinitionRegistry registerModulePropertiesPlaceHolderConfigurer(BeanDefinitionRegistry beanFactory,
                                                                                 Properties properties) {
         //通过GenericBeanDefinition创建bean
         GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
