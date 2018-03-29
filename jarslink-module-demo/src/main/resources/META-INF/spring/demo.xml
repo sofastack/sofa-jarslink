@@ -11,5 +11,13 @@
     <context:annotation-config/>
 
     <bean id="helloWorldAction"
-          class="com.alipay.jarslink.demo.HelloWorldAction" lazy-init="true"/>
+          class="com.alipay.jarslink.demo.HelloWorldAction"/>
+
+    <bean id="overrideTestBeanAction"
+          class="com.alipay.jarslink.demo.OverrideTestBeanAction">
+        <property name="helloWorldBean" ref="helloWorldBean"/>
+    </bean>
+
+    <bean id="helloWorldBean"
+          class="com.alipay.jarslink.demo.HelloWorldBean"/>
 </beans>
