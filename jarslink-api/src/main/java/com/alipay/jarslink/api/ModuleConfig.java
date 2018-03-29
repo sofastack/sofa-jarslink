@@ -77,6 +77,8 @@ public class ModuleConfig {
 
     /**
      * 模块指定需要覆盖的Class的包名,不遵循双亲委派, 模块的类加载器加载这些包
+     * <p>
+     * 如果子模块中加载不到那么仍然会到父容器中加载
      */
     private List<String> overridePackages = Lists.newArrayList();
 

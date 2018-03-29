@@ -17,11 +17,7 @@
  */
 package com.alipay.jarslink.api.impl;
 
-import com.alipay.jarslink.api.Module;
-import com.alipay.jarslink.api.ModuleManager;
-import com.alipay.jarslink.api.Action;
-import com.alipay.jarslink.api.ModuleConfig;
-import com.alipay.jarslink.api.ModuleLoader;
+import com.alipay.jarslink.api.*;
 import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,7 +52,7 @@ public class ModuleManagerTest {
     @Test
     public void shouldLoadModule() {
         //1:加载模块
-        Module module = loadModule(false);
+        Module module = loadModule("jarslink-module-demo-1.0.0.jar");
         Assert.assertNotNull(module);
         Assert.assertNotNull(module.getCreation());
         Assert.assertNotNull(module.getChildClassLoader());
@@ -69,7 +65,7 @@ public class ModuleManagerTest {
     @Test
     public void shouldRegisterModule() throws MalformedURLException {
         //2:注册模块
-        Module module = loadModule(false);
+        Module module = loadModule("jarslink-module-demo-1.0.0.jar");
         Module removedModule = moduleManager.register(module);
         Assert.assertNull(removedModule);
 
@@ -87,41 +83,36 @@ public class ModuleManagerTest {
     }
 
     @Test
-    public void shouldDoActionByXml() {
-        shouldDoAction(false);
+    public void shouldDoAction() {
+        shouldDoAction("jarslink-module-demo-1.0.0.jar", "helloworld");
     }
 
     @Test
-    public void shouldDoActionByAnnotation() {
-        shouldDoAction(true);
+    public void sholdDoActionOverride() {
+        //测试覆盖bean
+        shouldDoAction("jarslink-module-demo-1.0.0.jar", "overrideTestBeanAction");
     }
 
     /**
      * 构建模块配置信息
      */
-    public static ModuleConfig buildModuleConfig(boolean annotation) {
-        return buildModuleConfig(true, annotation);
+    public static ModuleConfig buildModuleConfig(String moudulePath) {
+        return buildModuleConfig(true, moudulePath);
     }
 
-    public static ModuleConfig buildModuleConfig(boolean enabled, boolean annotation) {
+    public static ModuleConfig buildModuleConfig(boolean enabled, String moudulePath) {
         URL demoModule;
         ModuleConfig moduleConfig = new ModuleConfig();
+        //通过该方法构建的配置都是使用注解形式扫描bean的
         String scanBase = "com.alipay.jarslink.main";
         moduleConfig.addScanPackage(scanBase);
-        if (annotation) {
-            //增加spring扫描配置，自动发现注解形式的bean
-            demoModule = Thread.currentThread().getContextClassLoader().getResource
-//                    ("jarslink-module-demo-annotation-1.0.0.jar");
-                    ("jarslink-module-demo-annotation-1.0.0.jar");
-        } else {
-            moduleConfig.removeScanPackage(scanBase);
-            demoModule = Thread.currentThread().getContextClassLoader().getResource
-                    ("jarslink-module-demo-xml-1.0.0.jar");
-        }
+        demoModule = Thread.currentThread().getContextClassLoader().getResource(moudulePath);
+
+//        不允许突破双亲委派，如果允许需要修改Assert.assertEquals(result, "parent:hello");为Assert.assertEquals(result, "hello");
+//        moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
 
         moduleConfig.setName("demo");
         moduleConfig.setEnabled(enabled);
-        moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
         moduleConfig.setVersion("1.0.0.20170621");
         Map<String, Object> properties = new HashMap();
         properties.put("url", "127.0.0.1");
@@ -130,34 +121,56 @@ public class ModuleManagerTest {
         return moduleConfig;
     }
 
-    private Module loadModule(boolean annotation) {
-        return moduleLoader.load(buildModuleConfig(annotation));
+    private Module loadModule(String modulePath) {
+        return moduleLoader.load(buildModuleConfig(true, modulePath));
     }
 
-    private void shouldDoAction(boolean annotation) {
-        Module findModule = loadModule(annotation);
-        Module removedModule = moduleManager.register(findModule);
+    private void shouldDoAction(String modulePath, String actionName) {
+        Module findModule = loadModule(modulePath);
+        moduleManager.register(findModule);
         //4.1:查找和执行Action
 
-        String actionName = "helloworld";
-        ModuleConfig moduleConfig = new ModuleConfig();
-        moduleConfig.setName("h");
-        moduleConfig.setEnabled(true);
-        ModuleConfig result = findModule.doAction(actionName, moduleConfig);
-        Assert.assertEquals(1, findModule.getActions().size());
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result.getName(), moduleConfig.getName());
-        Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
+        if ("overrideTestBeanAction".equals(actionName)) {
+            //测试覆写bean
+            String result = shouldDoAction(modulePath, actionName, "hello");
+            Assert.assertEquals(result, "parent:hello");
+        } else {
+            ModuleConfig moduleConfig = new ModuleConfig();
+            moduleConfig.setName("h");
+            moduleConfig.setEnabled(true);
+            ModuleConfig result = shouldDoAction(modulePath, actionName, moduleConfig);
+            Assert.assertEquals(2, findModule.getActions().size());
+            Assert.assertNotNull(result);
+            Assert.assertEquals(result.getName(), moduleConfig.getName());
+            Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
 
-        //4.2:查找和执行Action
-        Action<ModuleConfig, ModuleConfig> action = findModule.getAction(actionName);
-        Assert.assertNotNull(action);
-        result = action.execute(moduleConfig);
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result.getName(), moduleConfig.getName());
-        Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
+            //4.2:查找和执行Action
+            Action<ModuleConfig, ModuleConfig> action = findModule.getAction(actionName);
+            Assert.assertNotNull(action);
+            result = action.execute(moduleConfig);
+            Assert.assertNotNull(result);
+            Assert.assertEquals(result.getName(), moduleConfig.getName());
+            Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
+        }
+
 
         //卸载模块
         moduleManager.remove(findModule.getName());
+    }
+
+    /**
+     * 执行action
+     *
+     * @param modulePath     模块位置
+     * @param actionName     action name
+     * @param param          调用参数
+     * @param <T>            参数类型
+     * @param <R>            结果类型
+     * @return 调用结果
+     */
+    private <T, R> R shouldDoAction(String modulePath, String actionName, T param) {
+        Module findModule = loadModule(modulePath);
+        moduleManager.register(findModule);
+        return findModule.doAction(actionName, param);
     }
 }
