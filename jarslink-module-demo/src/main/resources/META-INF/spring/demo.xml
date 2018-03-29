@@ -9,6 +9,11 @@
 
     <context:annotation-config/>
 
+    <bean id="xmlAction"
+          class="com.alipay.jarslink.demo.XmlAction"/>
+
     <bean id="helloWorldAction"
-          class="com.alipay.jarslink.demo.HelloWorldAction"/>
+          class="com.alipay.jarslink.demo.HelloWorldAction" lazy-init="true">
+        <property name="annotationAction" ref="annotationAction"></property>
+    </bean>
 </beans>
