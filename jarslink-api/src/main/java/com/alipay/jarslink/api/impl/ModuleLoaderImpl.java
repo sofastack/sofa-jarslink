@@ -138,7 +138,13 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
                         getExclusionConfigeNameList(properties)));
                 context = moduleApplicationContext;
             }
-            context.setParent(applicationContext);
+            if (moduleConfig.getEnableOverrideModuleBean()) {
+                context.setParent(applicationContext);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("module {}:{} allow current process to override bean in module", moduleConfig.getName(),
+                            moduleConfig.getVersion());
+                }
+            }
             ((DefaultResourceLoader) context).setClassLoader(moduleClassLoader);
             context.refresh();
             return context;

@@ -13,12 +13,12 @@
     <!-- 模块管理器 -->
     <bean name="moduleManager" class="com.alipay.jarslink.api.impl.ModuleManagerImpl"></bean>
 
+    <bean id="helloWorldBean"
+          class="com.alipay.jarslink.demo.HelloWorldBean"/>
+
     <!-- 模块服务 -->
     <bean name="moduleService" class="com.alipay.jarslink.api.impl.ModuleServiceImpl">
         <property name="moduleLoader" ref="moduleLoader"></property>
         <property name="moduleManager" ref="moduleManager"></property>
     </bean>
-
-
-
 </beans>
