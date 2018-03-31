@@ -30,6 +30,7 @@ import java.util.Properties;
  * @version $Id: ModuleXmlApplicationContext.java, v 0.1 2017年05月30日 2:55 PM tengfei.fangtf Exp $
  */
 public class ModuleXmlApplicationContext extends ClassPathXmlApplicationContext {
+
     /**
      * 模块属性
      */

@@ -17,7 +17,11 @@
  */
 package com.alipay.jarslink.api.impl;
 
-import com.alipay.jarslink.api.*;
+import com.alipay.jarslink.api.Module;
+import com.alipay.jarslink.api.ModuleConfig;
+import com.alipay.jarslink.api.ModuleLoader;
+import com.alipay.jarslink.api.ModuleManager;
+import com.alipay.jarslink.api.ModuleService;
 import com.google.common.base.Preconditions;
 
 import static com.alipay.jarslink.api.impl.ModuleUtil.destroyQuietly;
@@ -29,7 +33,9 @@ import static com.alipay.jarslink.api.impl.ModuleUtil.destroyQuietly;
  * @version $Id: ModuleServiceImpl.java, v 0.1 2017年07月19日 9:28 PM tengfei.fangtf Exp $
  */
 public class ModuleServiceImpl implements ModuleService {
+
     private ModuleManager moduleManager;
+
     private ModuleLoader moduleLoader;
 
     @Override
