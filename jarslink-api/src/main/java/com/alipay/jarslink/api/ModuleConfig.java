@@ -62,6 +62,10 @@ public class ModuleConfig {
 
     /**
      * spring扫描注解的包，当该set不为空时启动包扫描，将自动扫描注解形式的bean
+     * <p>
+     * <strong>当xml中和注解同时定义了一个相同名字的bean将会以xml中的为主，也就是注解定义的bean会被xml定义的bean 覆盖</strong>
+     * <p>
+     * <strong>xml中的bean不能依赖注解bean，注解bean可以依赖xml定义的bean</strong>
      */
     private Set<String> scanPackages = new CopyOnWriteArraySet<String>();
 
