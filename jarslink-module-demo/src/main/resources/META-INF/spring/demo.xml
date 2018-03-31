@@ -20,4 +20,7 @@
 
     <bean id="helloWorldBean"
           class="com.alipay.jarslink.demo.HelloWorldBean"/>
+
+    <bean id="xmlAction"
+          class="com.alipay.jarslink.demo.XmlAction"/>
 </beans>
