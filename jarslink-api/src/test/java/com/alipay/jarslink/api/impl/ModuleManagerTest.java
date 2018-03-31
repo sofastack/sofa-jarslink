@@ -125,6 +125,7 @@ public class ModuleManagerTest {
 
         //测试xml中和annotation注册同名bean（不能同时存在，如果有重名的情况下以xml中的为主）
         //4.2:查找和执行Action
+        action = null;
         try {
             action = module.getAction("overrideXmlAction");
         } catch (Exception e) {
