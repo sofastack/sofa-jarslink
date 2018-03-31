@@ -59,7 +59,7 @@ public class ModuleManagerTest {
         //卸载模块
         module.destroy();
         Assert.assertNotNull(module.getChildClassLoader());
-
+        moduleManager.remove(module.getName());
     }
 
     @Test
@@ -80,6 +80,8 @@ public class ModuleManagerTest {
 
         Assert.assertNull(moduleManager.find(remove.getName()));
         Assert.assertEquals(0, moduleManager.getModules().size());
+
+        moduleManager.remove(module.getName());
     }
 
     @Test
@@ -131,6 +133,7 @@ public class ModuleManagerTest {
         } catch (Exception e) {
         }
         Assert.assertNull(action);
+        moduleManager.remove(module.getName());
     }
 
     @Test

@@ -20,6 +20,8 @@ package com.alipay.jarslink.api.impl;
 import com.alipay.jarslink.api.Module;
 import com.alipay.jarslink.api.ModuleManager;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -44,24 +46,27 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             .getLogger(ModuleManagerImpl.class);
 
     /**
-     * 已注册的所有模块
+     * 已注册的所有模块,key:moduleName
      */
-    private final ConcurrentHashMap<String, Module> allModules = new ConcurrentHashMap();
+    private final ConcurrentHashMap<String, RuntimeModule> allModules = new ConcurrentHashMap();
 
-    /**
-     * 每个模块的默认版本
-     */
-    private final ConcurrentHashMap<String, String> defaultVersions = new ConcurrentHashMap();
-
-    /**
-     * 加载模块错误信息
-     */
-    private final ConcurrentHashMap<String, String> errorContext = new ConcurrentHashMap();
+    RuntimeModule getRuntimeModule(String name) {
+        return allModules.get(name.toUpperCase());
+    }
 
     @Override
     public List<Module> getModules() {
+        List<Module> modules = Lists.newArrayList();
+
+        for (String name : allModules.keySet()) {
+            RuntimeModule runtimeModule = getRuntimeModule(name);
+            for (String version : runtimeModule.getModules().keySet()) {
+                modules.add(runtimeModule.getModules().get(version));
+            }
+        }
+
         return ImmutableList
-                .copyOf(filter(allModules.values(), instanceOf(SpringModule.class)));
+                .copyOf(filter(modules, instanceOf(SpringModule.class)));
     }
 
     @Override
@@ -72,42 +77,49 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         return find(name, defaultVersion);
     }
 
-    private String getDefaultVersion(String name) {return defaultVersions.get(name.toUpperCase());}
+    private String getDefaultVersion(String name) {return getRuntimeModule(name).getDefaultVersion();}
 
     @Override
     public Module find(String name, String version) {
-        return allModules.get(getModuleKey(name, version));
+        return getRuntimeModule(name).getModule(version);
     }
 
     @Override
-    public String activeVersion(String name, String version) {
+    public void activeVersion(String name, String version) {
         checkNotNull(name, "module name is null");
         checkNotNull(version, "module version is null");
-        return defaultVersions.put(getModuleName(name), version);
+        getRuntimeModule(name).setDefaultVersion(version);
     }
 
-    private static String getModuleName(String name) {return name.toUpperCase();}
-
-    public static String getModuleKey(String name, String version) {
+    @Override
+    public String getActiveVersion(String name) {
         checkNotNull(name, "module name is null");
-        checkNotNull(version, "module version is null");
-        return getModuleName(name) + "_" + version;
+        return getDefaultVersion(name);
     }
 
     @Override
     public Module register(Module module) {
         checkNotNull(module, "module is null");
         String name = module.getName();
+        String version = module.getVersion();
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Put Module: {}-{}", name, module.getVersion());
+            LOGGER.info("register Module: {}-{}", name, version);
         }
 
-        //设置默认版本
-        if (!defaultVersions.containsKey(getModuleName(name))) {
-            activeVersion(name, module.getVersion());
+        RuntimeModule runtimeModule = getRuntimeModule(name);
+        Module oldModule = null;
+        if (runtimeModule == null) {
+            runtimeModule = new RuntimeModule().withName(name).withDefaultVersion(version).addModule(module);
+            allModules.put(name.toUpperCase(), runtimeModule);
+        } else {
+            oldModule = runtimeModule.getModule(runtimeModule.getDefaultVersion());
+            runtimeModule.addModule(module).setDefaultVersion(version);
+            if (oldModule!=null && module.getModuleConfig().isNeedUnloadOldVersion() && !runtimeModule.getModules().isEmpty()) {
+                runtimeModule.getModules().remove(oldModule.getVersion());
+            }
         }
 
-        return allModules.put(getModuleKey(name, module.getVersion()), module);
+        return oldModule;
     }
 
     @Override
@@ -116,18 +128,19 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Remove Module: {}", name);
         }
-        String defaultVersion = getDefaultVersion(name);
-        return remove(name, defaultVersion);
+        return remove(name, getRuntimeModule(name).getDefaultVersion());
     }
 
     @Override
     public Module remove(String name, String version) {
-        return allModules.remove(getModuleKey(name, version));
+        checkNotNull(name, "module name is null");
+        checkNotNull(version, "module version is null");
+        return getRuntimeModule(name).getModules().remove(version);
     }
 
     @Override
     public void destroy() throws Exception {
-        for (Module each : allModules.values()) {
+        for (Module each : getModules()) {
             try {
                 each.destroy();
             } catch (Exception e) {
@@ -135,13 +148,21 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             }
         }
         allModules.clear();
-        defaultVersions.clear();
-        errorContext.clear();
     }
 
     @Override
     public Map<String, String> getErrorModuleContext() {
-        return errorContext;
+
+        Map<String, String> result = Maps.newHashMap();
+
+        for (String name : allModules.keySet()) {
+            RuntimeModule runtimeModule = getRuntimeModule(name);
+            for (String version : runtimeModule.getModules().keySet()) {
+                result.put(name, runtimeModule.getErrorContext());
+            }
+        }
+
+        return result;
     }
 
 }

@@ -49,9 +49,16 @@ public interface ModuleManager {
      *
      * @param name    module name
      * @param version module version
-     * @return old module version
      */
-    String activeVersion(String name,String version);
+    void activeVersion(String name, String version);
+
+    /**
+     * 获得模块激活的版本
+     *
+     * @param name
+     * @return
+     */
+    String getActiveVersion(String name);
 
     /**
      * 获取所有已加载的Module
@@ -83,10 +90,11 @@ public interface ModuleManager {
      * @param version  版本号
      * @return 被移除的模块
      */
-    Module remove(String name,String version);
+    Module remove(String name, String version);
+
 
     /**
-     * 获取发布失败的模块异常信息
+     * 获取加载失败的模块异常信息
      *
      * @return key:模块名,value:错误信息
      */

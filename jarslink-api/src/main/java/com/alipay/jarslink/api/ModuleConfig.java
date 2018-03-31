@@ -22,7 +22,6 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.net.URL;
 import java.util.List;
@@ -38,12 +37,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author tengfei.fangtf
  * @version $Id: ModuleConfig.java, v 0.1 Mar 23, 2017 13:02:13 PM tengfei.fangtf Exp $
  */
-public class ModuleConfig {
-
-    /**
-     * 默认的ToStringStyle
-     */
-    public static final transient ToStringStyle DEFAULT_TO_STRING_STYLE = new DefaultToStringStyle();
+public class ModuleConfig extends ToStringObject {
 
     /**
      * 模块名,建议用英文命名,忽略大小写
@@ -90,6 +84,16 @@ public class ModuleConfig {
      * JAR 包资源地址,模块存放的地方
      */
     private List<URL> moduleUrl = Lists.newArrayList();
+
+    private boolean isNeedUnloadOldVersion = true;
+
+    public boolean isNeedUnloadOldVersion() {
+        return isNeedUnloadOldVersion;
+    }
+
+    public void setNeedUnloadOldVersion(boolean needUnloadOldVersion) {
+        isNeedUnloadOldVersion = needUnloadOldVersion;
+    }
 
     public List<URL> getModuleUrl() {
         return moduleUrl;
@@ -221,31 +225,18 @@ public class ModuleConfig {
         this.overridePackages = overridePackages;
     }
 
-    /**
-     * 默认的ToStringStyle
-     */
-    public static class DefaultToStringStyle extends ToStringStyle {
-
-        private static final long serialVersionUID = 1L;
-
-        public DefaultToStringStyle() {
-            setUseShortClassName(true);
-            setUseIdentityHashCode(false);
-        }
-
-        @Override
-        public void append(StringBuffer buffer, String fieldName, Object value, Boolean fullDetail) {
-            if (value != null) {
-                super.append(buffer, fieldName, value, fullDetail);
-            }
-        }
-
-        @Override
-        public void append(StringBuffer buffer, String fieldName, Object[] array, Boolean fullDetail) {
-            if (array != null && array.length > 0) {
-                super.append(buffer, fieldName, array, fullDetail);
-            }
-        }
+    public ModuleConfig withName(String name) {
+        setName(name);
+        return this;
     }
 
+    public ModuleConfig addModuleUrl(URL url) {
+        moduleUrl.add(url);
+        return this;
+    }
+
+    public ModuleConfig withNeedUnloadOldVersion(boolean needUnloadOldVersion) {
+        setNeedUnloadOldVersion(needUnloadOldVersion);
+        return this;
+    }
 }
