@@ -84,20 +84,82 @@ public class ModuleManagerTest {
 
     @Test
     public void shouldDoAction() {
-        shouldDoAction("jarslink-module-demo-1.0.0.jar", "helloworld");
+        shouldDoAction(loadModule("jarslink-module-demo-1.0.0.jar"), "helloworld");
     }
 
     @Test
-    public void sholdDoActionOverride() {
-        //测试覆盖bean
-        shouldDoAction("jarslink-module-demo-1.0.0.jar", "overrideTestBeanAction");
-    }
-
-    @Test
-    public void loadTest() {
-        ModuleConfig config = buildModuleConfig("jarslink-module-demo-1.0.0.jar");
+    public void shouldDoAnnotationAction() {
+        //annotation方式加载，测试annotation中注入xml定义的action  同时测试annotation action和xmlaction同时加载
+        ModuleConfig config = buildModuleConfig(true, "jarslink-module-demo-1.0.0.jar");
         config.addScanPackage("com.alipay.jarslink.main");
-        moduleLoader.load(config);
+        config.addScanPackage("com.alipay.jarslink.demo");
+
+        Module module = moduleLoader.load(config);
+        Assert.assertEquals(4, module.getActions().size());
+
+        //获取annotationAction  该action中注入xml中定义的xmlAction，使用xmlAction的实现
+        String result = module.doAction("annotationAction", "hello");
+        Assert.assertNotNull(result);
+        //实际结果为xmlAction返回，annotationAction作为代理
+        Assert.assertEquals(result, "xml:hello");
+
+        //4.2:查找和执行Action
+        Action<String, String> action = module.getAction("annotationAction");
+        Assert.assertNotNull(action);
+        result = action.execute("hello");
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result, "xml:hello");
+
+        //查找和执行xml bean
+        result = module.doAction("xmlAction", "hello");
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result, "xml:hello");
+
+
+        //4.2:查找和执行Action
+        action = module.getAction("xmlAction");
+        Assert.assertNotNull(action);
+        result = action.execute("hello");
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result, "xml:hello");
+
+        //测试xml中和annotation注册同名bean（不能同时存在，如果有重名的情况下以xml中的为主）
+        //4.2:查找和执行Action
+        try {
+            action = module.getAction("overrideXmlAction");
+        } catch (Exception e) {
+        }
+        Assert.assertNull(action);
+    }
+
+    @Test
+    public void shouldDoXmlAction() {
+        //xml的方式加载
+        ModuleConfig config = buildModuleConfig(true, "jarslink-module-demo-1.0.0.jar");
+
+        Module module = moduleLoader.load(config);
+
+        Assert.assertEquals(3, module.getActions().size());
+        //4.2:查找annotation Action  因为xml没有配置该action所以不会被发现
+        Action<String, String> action = null;
+        try {
+            action = module.getAction("annotationAction");
+        } catch (NullPointerException e) {
+            //由于找不到action所以会抛异常
+        }
+        Assert.assertNull(action);
+
+        //查找和执行xml bean
+        String result = module.doAction("xmlAction", "hello");
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result, "xml:hello");
+
+        //4.2:查找和执行Action
+        action = module.getAction("xmlAction");
+        Assert.assertNotNull(action);
+        result = action.execute("hello");
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result, "xml:hello");
     }
 
     /**
@@ -135,52 +197,30 @@ public class ModuleManagerTest {
         return moduleLoader.load(buildModuleConfig(true, modulePath));
     }
 
-    private void shouldDoAction(String modulePath, String actionName) {
-        Module findModule = loadModule(modulePath);
-        moduleManager.register(findModule);
+    private void shouldDoAction(Module module, String actionName) {
+        moduleManager.register(module);
         //4.1:查找和执行Action
 
-        if ("overrideTestBeanAction".equals(actionName)) {
-            //测试覆写bean
-            String result = shouldDoAction(modulePath, actionName, "hello");
-            Assert.assertEquals(result, "hello");
-        } else {
-            ModuleConfig moduleConfig = new ModuleConfig();
-            moduleConfig.setName("h");
-            moduleConfig.setEnabled(true);
-            ModuleConfig result = shouldDoAction(modulePath, actionName, moduleConfig);
-            Assert.assertEquals(2, findModule.getActions().size());
-            Assert.assertNotNull(result);
-            Assert.assertEquals(result.getName(), moduleConfig.getName());
-            Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
+        ModuleConfig moduleConfig = new ModuleConfig();
+        moduleConfig.setName("h");
+        moduleConfig.setEnabled(true);
 
-            //4.2:查找和执行Action
-            Action<ModuleConfig, ModuleConfig> action = findModule.getAction(actionName);
-            Assert.assertNotNull(action);
-            result = action.execute(moduleConfig);
-            Assert.assertNotNull(result);
-            Assert.assertEquals(result.getName(), moduleConfig.getName());
-            Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
-        }
+        ModuleConfig result = module.doAction(actionName, moduleConfig);
+        Assert.assertEquals(3, module.getActions().size());
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result.getName(), moduleConfig.getName());
+        Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
+
+        //4.2:查找和执行Action
+        Action<ModuleConfig, ModuleConfig> action = module.getAction(actionName);
+        Assert.assertNotNull(action);
+        result = action.execute(moduleConfig);
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result.getName(), moduleConfig.getName());
+        Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
 
 
         //卸载模块
-        moduleManager.remove(findModule.getName());
-    }
-
-    /**
-     * 执行action
-     *
-     * @param modulePath 模块位置
-     * @param actionName action name
-     * @param param      调用参数
-     * @param <T>        参数类型
-     * @param <R>        结果类型
-     * @return 调用结果
-     */
-    private <T, R> R shouldDoAction(String modulePath, String actionName, T param) {
-        Module findModule = loadModule(modulePath);
-        moduleManager.register(findModule);
-        return findModule.doAction(actionName, param);
+        moduleManager.remove(module.getName());
     }
 }
