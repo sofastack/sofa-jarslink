@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * annotation bean  由注解扫描发现注册
+ * annotation bean  由注解扫描发现注册，同时该action注入了{@link com.alipay.jarslink.demo.XmlAction}，XmlAction定义在xml中
  *
  * @author joe
  * @version 2018.03.31 23:10
