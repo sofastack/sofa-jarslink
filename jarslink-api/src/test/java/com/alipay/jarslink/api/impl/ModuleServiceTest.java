@@ -41,7 +41,7 @@ public class ModuleServiceTest {
     @Test
     public void shouldLoadAndRegister() {
         //先加载并注册模块
-        ModuleConfig moduleConfig = ModuleManagerTest.buildModuleConfig("jarslink-module-demo-1.0.0.jar");
+        ModuleConfig moduleConfig = ModuleManagerTest.buildModuleConfig();
         Module module = moduleService.loadAndRegister(moduleConfig);
         Assert.assertNotNull(module);
         Assert.assertNotNull(module.getCreation());
@@ -50,8 +50,7 @@ public class ModuleServiceTest {
         Assert.assertEquals(moduleConfig.getVersion(), module.getVersion());
 
         //再禁用模块
-        module = moduleService.loadAndRegister(ModuleManagerTest.buildModuleConfig(false,
-                "jarslink-module-demo-1.0.0.jar"));
+        module = moduleService.loadAndRegister(ModuleManagerTest.buildModuleConfig(false));
         Assert.assertNull(module);
 
     }

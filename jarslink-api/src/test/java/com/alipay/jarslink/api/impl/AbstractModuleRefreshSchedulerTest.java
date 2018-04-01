@@ -18,9 +18,9 @@
 
 package com.alipay.jarslink.api.impl;
 
-import com.alipay.jarslink.api.ModuleManager;
 import com.alipay.jarslink.api.Module;
 import com.alipay.jarslink.api.ModuleConfig;
+import com.alipay.jarslink.api.ModuleManager;
 import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
 import org.junit.Before;
@@ -59,8 +59,7 @@ public class AbstractModuleRefreshSchedulerTest {
     @Test
     public void shouldAddModule() {
         //装载模块
-        abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(ModuleManagerTest.buildModuleConfig
-                ("jarslink-module-demo-1.0.0.jar")));
+        abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(ModuleManagerTest.buildModuleConfig()));
         Assert.assertEquals(1, abstractModuleRefreshSchedulerImpl.queryModuleConfigs().size());
         abstractModuleRefreshSchedulerImpl.run();
         Module demo = moduleManager.find("demo");
@@ -84,15 +83,14 @@ public class AbstractModuleRefreshSchedulerTest {
     public void shouldUpdateModule() {
         //装载模块
         abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(ModuleManagerTest.buildModuleConfig
-                (true, "jarslink-module-demo-1.0.0.jar")));
+                (true)));
         Assert.assertEquals(1, abstractModuleRefreshSchedulerImpl.queryModuleConfigs().size());
         abstractModuleRefreshSchedulerImpl.run();
         Module demo = moduleManager.find("demo");
         Assert.assertNotNull(demo.getAction("helloworld"));
 
         //修改模块
-        ModuleConfig moduleConfig = ModuleManagerTest.buildModuleConfig(true,
-                "jarslink-module-demo-1.0.0.jar");
+        ModuleConfig moduleConfig = ModuleManagerTest.buildModuleConfig(true);
         moduleConfig.setVersion("1.1");
         abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(moduleConfig));
         abstractModuleRefreshSchedulerImpl.run();
@@ -101,7 +99,7 @@ public class AbstractModuleRefreshSchedulerTest {
         moduleManager.activeVersion("demo", moduleConfig.getVersion());
         demo = moduleManager.find(moduleConfig.getName());
         //上述部分可以替换为下面的写法
-//        demo = moduleManager.find(moduleConfig.getName(), moduleConfig.getVersion());
+        //        demo = moduleManager.find(moduleConfig.getName(), moduleConfig.getVersion());
 
         Assert.assertEquals(moduleConfig.getVersion(), demo.getVersion());
 

@@ -81,6 +81,8 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
     @Override
     public Module find(String name, String version) {
+        checkNotNull(name, "module name is null");
+        checkNotNull(version, "module version is null");
         return getRuntimeModule(name).getModule(version);
     }
 
@@ -157,9 +159,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
         for (String name : allModules.keySet()) {
             RuntimeModule runtimeModule = getRuntimeModule(name);
-            for (String version : runtimeModule.getModules().keySet()) {
-                result.put(name, runtimeModule.getErrorContext());
-            }
+            result.put(name, runtimeModule.getErrorContext());
         }
 
         return result;

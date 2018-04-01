@@ -17,7 +17,11 @@
  */
 package com.alipay.jarslink.api.impl;
 
-import com.alipay.jarslink.api.*;
+import com.alipay.jarslink.api.Action;
+import com.alipay.jarslink.api.Module;
+import com.alipay.jarslink.api.ModuleConfig;
+import com.alipay.jarslink.api.ModuleLoader;
+import com.alipay.jarslink.api.ModuleManager;
 import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,6 +47,8 @@ import java.util.Map;
 @ContextConfiguration(locations = {"classpath*:META-INF/spring/jarslink.xml"})
 public class ModuleManagerTest {
 
+    public static final String JARSLINK_MODULE_DEMO = "jarslink-module-demo-1.0.0.jar";
+
     @Autowired
     private ModuleManager moduleManager;
 
@@ -52,20 +58,22 @@ public class ModuleManagerTest {
     @Test
     public void shouldLoadModule() {
         //1:加载模块
-        Module module = loadModule("jarslink-module-demo-1.0.0.jar");
+        Module module = loadModule();
         Assert.assertNotNull(module);
         Assert.assertNotNull(module.getCreation());
         Assert.assertNotNull(module.getChildClassLoader());
         //卸载模块
         module.destroy();
         Assert.assertNotNull(module.getChildClassLoader());
-        moduleManager.remove(module.getName());
+        removeModule(module);
     }
+
+    private void removeModule(Module module) {moduleManager.remove(module.getName());}
 
     @Test
     public void shouldRegisterModule() throws MalformedURLException {
         //2:注册模块
-        Module module = loadModule("jarslink-module-demo-1.0.0.jar");
+        Module module = loadModule();
         Module removedModule = moduleManager.register(module);
         Assert.assertNull(removedModule);
 
@@ -81,18 +89,13 @@ public class ModuleManagerTest {
         Assert.assertNull(moduleManager.find(remove.getName()));
         Assert.assertEquals(0, moduleManager.getModules().size());
 
-        moduleManager.remove(module.getName());
-    }
-
-    @Test
-    public void shouldDoAction() {
-        shouldDoAction(loadModule("jarslink-module-demo-1.0.0.jar"), "helloworld");
+        removeModule(module);
     }
 
     @Test
     public void shouldDoAnnotationAction() {
         //annotation方式加载，测试annotation中注入xml定义的action  同时测试annotation action和xmlaction同时加载
-        ModuleConfig config = buildModuleConfig(true, "jarslink-module-demo-1.0.0.jar");
+        ModuleConfig config = buildModuleConfig(true);
         config.addScanPackage("com.alipay.jarslink.main");
         config.addScanPackage("com.alipay.jarslink.demo");
 
@@ -117,7 +120,6 @@ public class ModuleManagerTest {
         Assert.assertNotNull(result);
         Assert.assertEquals(result, "xml:hello");
 
-
         //4.2:查找和执行Action
         action = module.getAction("xmlAction");
         Assert.assertNotNull(action);
@@ -131,18 +133,18 @@ public class ModuleManagerTest {
         try {
             action = module.getAction("overrideXmlAction");
         } catch (Exception e) {
+            Assert.assertNotNull(e);
         }
         Assert.assertNull(action);
-        moduleManager.remove(module.getName());
+        removeModule(module);
     }
 
     @Test
     public void shouldDoXmlAction() {
         //xml的方式加载
-        ModuleConfig config = buildModuleConfig(true, "jarslink-module-demo-1.0.0.jar");
+        ModuleConfig config = buildModuleConfig(true);
 
         Module module = moduleLoader.load(config);
-
         Assert.assertEquals(3, module.getActions().size());
         //4.2:查找annotation Action  因为xml没有配置该action所以不会被发现
         Action<String, String> action = null;
@@ -150,6 +152,7 @@ public class ModuleManagerTest {
             action = module.getAction("annotationAction");
         } catch (NullPointerException e) {
             //由于找不到action所以会抛异常
+            Assert.assertNotNull(e);
         }
         Assert.assertNull(action);
 
@@ -169,11 +172,11 @@ public class ModuleManagerTest {
     /**
      * 构建模块配置信息
      */
-    public static ModuleConfig buildModuleConfig(String moudulePath) {
-        return buildModuleConfig(true, moudulePath);
+    public static ModuleConfig buildModuleConfig() {
+        return buildModuleConfig(true);
     }
 
-    public static ModuleConfig buildModuleConfig(boolean enabled, String moudulePath) {
+    public static ModuleConfig buildModuleConfig(boolean enabled) {
         URL demoModule;
         ModuleConfig moduleConfig = new ModuleConfig();
         //通过该方法构建的配置都是使用注解形式扫描bean的
@@ -183,9 +186,9 @@ public class ModuleManagerTest {
         Map<String, Object> properties = new HashMap();
         moduleConfig.withEnabled(enabled).withVersion("1.0.0.20170621").withOverridePackages(ImmutableList.of("com" +
                 ".alipay.jarslink.demo")).withProperties(properties);
-        demoModule = Thread.currentThread().getContextClassLoader().getResource(moudulePath);
+        demoModule = Thread.currentThread().getContextClassLoader().getResource(JARSLINK_MODULE_DEMO);
 
-//        不允许突破双亲委派，如果允许需要修改Assert.assertEquals(result, "parent:hello");为Assert.assertEquals(result, "hello");
+        //        不允许突破双亲委派，如果允许需要修改Assert.assertEquals(result, "parent:hello");为Assert.assertEquals(result, "hello");
         moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
 
         moduleConfig.setName("demo");
@@ -197,11 +200,16 @@ public class ModuleManagerTest {
         return moduleConfig;
     }
 
-    private Module loadModule(String modulePath) {
-        return moduleLoader.load(buildModuleConfig(true, modulePath));
+    private Module loadModule() {
+        return moduleLoader.load(buildModuleConfig(true));
     }
 
-    private void shouldDoAction(Module module, String actionName) {
+    @Test
+    public void shouldDoAction() {
+
+        Module module = loadModule();
+        String actionName = "helloworld";
+
         moduleManager.register(module);
         //4.1:查找和执行Action
 
@@ -223,8 +231,7 @@ public class ModuleManagerTest {
         Assert.assertEquals(result.getName(), moduleConfig.getName());
         Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
 
-
         //卸载模块
-        moduleManager.remove(module.getName());
+        removeModule(module);
     }
 }
