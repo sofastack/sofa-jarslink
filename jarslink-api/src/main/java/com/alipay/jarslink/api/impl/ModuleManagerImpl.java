@@ -39,12 +39,10 @@ import static com.google.common.collect.Iterables.filter;
  *
  * @author tengfei.fangtf
  * @version $Id: ModuleManagerImpl.java, v 0.1 Mar 20, 2017 4:04:32 PM tengfei.fangtf Exp $
-
  */
 public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(ModuleManagerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModuleManagerImpl.class);
 
     /**
      * 已注册的所有模块,key:moduleName upperCase
@@ -60,15 +58,12 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
     public List<Module> getModules() {
         List<Module> modules = Lists.newArrayList();
 
-        for (String name : allModules.keySet()) {
-            RuntimeModule runtimeModule = getRuntimeModule((String) name);
-            for (String version : runtimeModule.getModules().keySet()) {
-                modules.add(runtimeModule.getModules().get(version));
-            }
+        for (Map.Entry<String, RuntimeModule> moduleEntry : allModules.entrySet()) {
+            RuntimeModule runtimeModule = moduleEntry.getValue();
+            modules.addAll(runtimeModule.getModules().values());
         }
 
-        return ImmutableList
-                .copyOf(filter(modules, instanceOf(SpringModule.class)));
+        return ImmutableList.copyOf(filter(modules, instanceOf(SpringModule.class)));
     }
 
     @Override
@@ -79,20 +74,22 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         return find(name, defaultVersion);
     }
 
-    private String getDefaultVersion(String name) {return getRuntimeModule((String) name).getDefaultVersion();}
+    private String getDefaultVersion(String name) {
+        return getRuntimeModule(name).getDefaultVersion();
+    }
 
     @Override
     public Module find(String name, String version) {
         checkNotNull(name, "module name is null");
         checkNotNull(version, "module version is null");
-        return getRuntimeModule((String) name).getModule(version);
+        return getRuntimeModule(name).getModule(version);
     }
 
     @Override
     public void activeVersion(String name, String version) {
         checkNotNull(name, "module name is null");
         checkNotNull(version, "module version is null");
-        getRuntimeModule((String) name).setDefaultVersion(version);
+        getRuntimeModule(name).setDefaultVersion(version);
     }
 
     @Override
@@ -127,7 +124,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             oldModule = runtimeModule.getDefaultModule();
             runtimeModule.addModule(module).setDefaultVersion(version);
             // remove module old version
-            if (oldModule != null && module.getModuleConfig().isNeedUnloadOldVersion() && !runtimeModule.getModules().isEmpty()) {
+            if (oldModule != null && module.getModuleConfig().isNeedUnloadOldVersion()) {
                 runtimeModule.getModules().remove(oldModule.getVersion());
             }
         }
@@ -141,14 +138,14 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Remove Module: {}", name);
         }
-        return remove(name, getRuntimeModule((String) name).getDefaultVersion());
+        return remove(name, getRuntimeModule(name).getDefaultVersion());
     }
 
     @Override
     public Module remove(String name, String version) {
         checkNotNull(name, "module name is null");
         checkNotNull(version, "module version is null");
-        return getRuntimeModule((String) name).getModules().remove(version);
+        return getRuntimeModule(name).getModules().remove(version);
     }
 
     @Override
@@ -169,7 +166,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         Map<String, String> result = Maps.newHashMap();
 
         for (String name : allModules.keySet()) {
-            RuntimeModule runtimeModule = getRuntimeModule((String) name);
+            RuntimeModule runtimeModule = getRuntimeModule(name);
             result.put(name, runtimeModule.getErrorContext());
         }
 
