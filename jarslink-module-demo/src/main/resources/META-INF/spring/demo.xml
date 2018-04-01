@@ -11,4 +11,6 @@
 
     <bean id="helloWorldAction"
           class="com.alipay.jarslink.demo.HelloWorldAction"/>
+    <bean id="processAction"
+          class="com.alipay.jarslink.demo.ProcessAction"/>
 </beans>

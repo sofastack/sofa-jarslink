@@ -15,12 +15,11 @@ public class ModuleRefreshSchedulerImpl extends AbstractModuleRefreshScheduler {
         return ImmutableList.of(buildModuleConfig());
     }
 
-    public static ModuleConfig buildModuleConfig() {
-        URL demoModule = Thread.currentThread().getContextClassLoader().getResource("lib/jarslink-module-demo-1.0.0.jar");
+    public static ModuleConfig buildModuleConfig() {URL demoModule = Thread.currentThread().getContextClassLoader().getResource("lib/jarslink-module-demo-1.0.0.jar");
         ModuleConfig moduleConfig = new ModuleConfig();
         moduleConfig.setName("demo");
         moduleConfig.setEnabled(true);
-        moduleConfig.setVersion("1.0.0.20170621");
+        moduleConfig.setVersion("1.0.0.20180402");
         moduleConfig.setProperties(ImmutableMap.of("svnPath", new Object()));
         moduleConfig.setModuleUrl(ImmutableList.of(demoModule));
         return moduleConfig;
