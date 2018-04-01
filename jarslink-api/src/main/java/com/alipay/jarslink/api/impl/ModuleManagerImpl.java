@@ -38,7 +38,8 @@ import static com.google.common.collect.Iterables.filter;
  * 模块管理，包含获取模块，执行模块里的方法
  *
  * @author tengfei.fangtf
- *
+ * @version $Id: ModuleManagerImpl.java, v 0.1 Mar 20, 2017 4:04:32 PM tengfei.fangtf Exp $
+
  */
 public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
@@ -46,7 +47,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             .getLogger(ModuleManagerImpl.class);
 
     /**
-     * 已注册的所有模块,key:moduleName
+     * 已注册的所有模块,key:moduleName upperCase
      */
     private final ConcurrentHashMap<String, RuntimeModule> allModules = new ConcurrentHashMap();
 
@@ -114,9 +115,9 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             runtimeModule = new RuntimeModule().withName(name).withDefaultVersion(version).addModule(module);
             allModules.put(name.toUpperCase(), runtimeModule);
         } else {
-            oldModule = runtimeModule.getModule(runtimeModule.getDefaultVersion());
+            oldModule = runtimeModule.getDefaultModule();
             runtimeModule.addModule(module).setDefaultVersion(version);
-            if (oldModule!=null && module.getModuleConfig().isNeedUnloadOldVersion() && !runtimeModule.getModules().isEmpty()) {
+            if (oldModule != null && module.getModuleConfig().isNeedUnloadOldVersion() && !runtimeModule.getModules().isEmpty()) {
                 runtimeModule.getModules().remove(oldModule.getVersion());
             }
         }

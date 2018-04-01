@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -61,7 +62,7 @@ public class ModuleConfig extends ToStringObject {
      * <p>
      * <strong>xml中的bean不能依赖注解bean，注解bean可以依赖xml定义的bean</strong>
      */
-    private Set<String> scanPackages = new CopyOnWriteArraySet<String>();
+    private Set<String> scanPackages = new CopyOnWriteArraySet<>();
 
     /**
      * 模块的版本，如1.0.0.20120609 版本变化会触发模块重新部署
@@ -101,9 +102,7 @@ public class ModuleConfig extends ToStringObject {
 
     public List<String> getModuleUrlPath() {
         List<String> moduleUrls = Lists.newArrayList();
-        for (URL url : moduleUrl) {
-            moduleUrls.add(url.toString());
-        }
+        moduleUrls.addAll(moduleUrl.stream().map(URL::toString).collect(Collectors.toList()));
         return moduleUrls;
     }
 
@@ -147,10 +146,10 @@ public class ModuleConfig extends ToStringObject {
      *
      * @param packageName 要添加的spring scan-base-package配置
      */
-    public void addScanPackage(String packageName) {
-        //不验证空字符串
+    public ModuleConfig addScanPackage(String packageName) {
         checkNotNull(packageName, "packageName must not be null");
         scanPackages.add(packageName);
+        return this;
     }
 
     /**
@@ -158,10 +157,11 @@ public class ModuleConfig extends ToStringObject {
      *
      * @param packageName 要移除的之前配置的spring scan-base-package
      */
-    public void removeScanPackage(String packageName) {
+    public ModuleConfig removeScanPackage(String packageName) {
         //不验证空字符串
         checkNotNull(packageName, "packageName must not be null");
         scanPackages.remove(packageName);
+        return this;
     }
 
     /**

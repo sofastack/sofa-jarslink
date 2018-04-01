@@ -56,20 +56,34 @@ public class ModuleManagerTest {
     private ModuleLoader moduleLoader;
 
     @Test
-    public void shouldLoadModule() {
-        //1:加载模块
-        Module module = loadModule();
-        Assert.assertNotNull(module);
-        Assert.assertNotNull(module.getCreation());
-        Assert.assertNotNull(module.getChildClassLoader());
-        //卸载模块
-        module.destroy();
-        Assert.assertNotNull(module.getChildClassLoader());
-        removeModule(module);
-    }
+    public void shouldDoAction() {
 
-    private void removeModule(Module module) {
-        moduleManager.remove(module.getName());
+        Module module = loadModule();
+        String actionName = "helloworld";
+
+        moduleManager.register(module);
+        //4.1:查找和执行Action
+
+        ModuleConfig moduleConfig = new ModuleConfig();
+        moduleConfig.setName("h");
+        moduleConfig.setEnabled(true);
+
+        ModuleConfig result = module.doAction(actionName, moduleConfig);
+        Assert.assertEquals(3, module.getActions().size());
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result.getName(), moduleConfig.getName());
+        Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
+
+        //4.2:查找和执行Action
+        Action<ModuleConfig, ModuleConfig> action = module.getAction(actionName);
+        Assert.assertNotNull(action);
+        result = action.execute(moduleConfig);
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result.getName(), moduleConfig.getName());
+        Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
+
+        //卸载模块
+        removeModule(module);
     }
 
     @Test
@@ -98,8 +112,7 @@ public class ModuleManagerTest {
     public void shouldDoOverrideAction() {
         //测试注解action被xml中的action覆盖
         ModuleConfig config = buildModuleConfig(true);
-        config.addScanPackage("com.alipay.jarslink.main");
-        config.addScanPackage("com.alipay.jarslink.demo");
+        config.addScanPackage("com.alipay.jarslink.main").addScanPackage("com.alipay.jarslink.demo");
 
         Module module = moduleLoader.load(config);
         Action<String, String> action = null;
@@ -185,6 +198,10 @@ public class ModuleManagerTest {
     }
 
     public static ModuleConfig buildModuleConfig(boolean enabled) {
+        return buildModuleConfig("demo", enabled);
+    }
+
+    public static ModuleConfig buildModuleConfig(String name, boolean enabled) {
         URL demoModule;
         ModuleConfig moduleConfig = new ModuleConfig();
         //通过该方法构建的配置都是使用注解形式扫描bean的
@@ -192,14 +209,13 @@ public class ModuleManagerTest {
         moduleConfig.addScanPackage(scanBase);
         moduleConfig.removeScanPackage(scanBase);
         Map<String, Object> properties = new HashMap();
-        moduleConfig.withEnabled(enabled).withVersion("1.0.0.20170621").withOverridePackages(ImmutableList.of("com" +
-                ".alipay.jarslink.demo")).withProperties(properties);
+        moduleConfig.withEnabled(enabled).withVersion("1.0.0.20170621").withOverridePackages(ImmutableList.of(
+                "com.alipay.jarslink.demo")).withProperties(properties);
         demoModule = Thread.currentThread().getContextClassLoader().getResource(JARSLINK_MODULE_DEMO);
 
-        //        不允许突破双亲委派，如果允许需要修改Assert.assertEquals(result, "parent:hello");为Assert.assertEquals(result, "hello");
         moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
 
-        moduleConfig.setName("demo");
+        moduleConfig.setName(name);
         moduleConfig.setEnabled(enabled);
         moduleConfig.setVersion("1.0.0.20170621");
         properties.put("url", "127.0.0.1");
@@ -212,34 +228,12 @@ public class ModuleManagerTest {
         return moduleLoader.load(buildModuleConfig(true));
     }
 
-    @Test
-    public void shouldDoAction() {
-
-        Module module = loadModule();
-        String actionName = "helloworld";
-
-        moduleManager.register(module);
-        //4.1:查找和执行Action
-
-        ModuleConfig moduleConfig = new ModuleConfig();
-        moduleConfig.setName("h");
-        moduleConfig.setEnabled(true);
-
-        ModuleConfig result = module.doAction(actionName, moduleConfig);
-        Assert.assertEquals(3, module.getActions().size());
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result.getName(), moduleConfig.getName());
-        Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
-
-        //4.2:查找和执行Action
-        Action<ModuleConfig, ModuleConfig> action = module.getAction(actionName);
-        Assert.assertNotNull(action);
-        result = action.execute(moduleConfig);
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result.getName(), moduleConfig.getName());
-        Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
-
-        //卸载模块
-        removeModule(module);
+    private Module loadModule(String name) {
+        return moduleLoader.load(buildModuleConfig(name, true));
     }
+
+    private void removeModule(Module module) {
+        moduleManager.remove(module.getName());
+    }
+
 }

@@ -101,6 +101,13 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
                 moduleApplicationContext);
     }
 
+    @Override
+    public void unload(Module module) {
+        if (module != null) {
+            module.destroy();
+        }
+    }
+
     /**
      * 根据本地临时文件Jar，初始化模块自己的ClassLoader，初始化Spring Application Context，同时要设置当前线程上下文的ClassLoader问模块的ClassLoader
      *

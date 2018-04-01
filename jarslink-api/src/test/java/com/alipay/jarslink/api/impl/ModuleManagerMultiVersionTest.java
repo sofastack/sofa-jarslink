@@ -56,6 +56,9 @@ public class ModuleManagerMultiVersionTest {
 
         Module demo2 = moduleManager.find(DEMO_MODULE, "2.0");
         Assert.assertNotNull(demo2);
+
+        Assert.assertEquals(2, moduleManager.getModules().size());
+
         removeModule();
     }
 

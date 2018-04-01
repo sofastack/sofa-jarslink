@@ -32,6 +32,10 @@ public class RuntimeModule extends ToStringObject {
         return modules.get(version);
     }
 
+    public Module getDefaultModule() {
+        return modules.get(getDefaultVersion());
+    }
+
     public RuntimeModule addModule(Module module) {
         modules.put(module.getVersion(), module);
         return this;
