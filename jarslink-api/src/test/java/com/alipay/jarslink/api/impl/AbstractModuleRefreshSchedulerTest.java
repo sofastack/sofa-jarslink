@@ -32,6 +32,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
 
+import static com.alipay.jarslink.api.impl.ModuleLoaderImplTest.buildModuleConfig;
+
 /**
  * JarsLink API入口,使用TITAN API必须继承AbstractModuleRefreshScheduler然后提供模块信息
  *
@@ -59,7 +61,7 @@ public class AbstractModuleRefreshSchedulerTest {
     @Test
     public void shouldAddModule() {
         //装载模块
-        abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(ModuleManagerTest.buildModuleConfig()));
+        abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(buildModuleConfig()));
         Assert.assertEquals(1, abstractModuleRefreshSchedulerImpl.queryModuleConfigs().size());
         abstractModuleRefreshSchedulerImpl.run();
         Module demo = moduleManager.find("demo");
@@ -82,7 +84,7 @@ public class AbstractModuleRefreshSchedulerTest {
     @Test
     public void shouldUpdateModule() {
         //装载模块
-        abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(ModuleManagerTest.buildModuleConfig
+        abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(buildModuleConfig
                 (true)));
         Assert.assertEquals(1, abstractModuleRefreshSchedulerImpl.queryModuleConfigs().size());
         abstractModuleRefreshSchedulerImpl.run();
@@ -90,7 +92,7 @@ public class AbstractModuleRefreshSchedulerTest {
         Assert.assertNotNull(demo.getAction("helloworld"));
 
         //修改模块
-        ModuleConfig moduleConfig = ModuleManagerTest.buildModuleConfig(true);
+        ModuleConfig moduleConfig = buildModuleConfig(true);
         moduleConfig.setVersion("1.1");
         abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(moduleConfig));
         abstractModuleRefreshSchedulerImpl.run();

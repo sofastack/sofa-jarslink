@@ -17,12 +17,9 @@
  */
 package com.alipay.jarslink.api.impl;
 
-import com.alipay.jarslink.api.Action;
 import com.alipay.jarslink.api.Module;
-import com.alipay.jarslink.api.ModuleConfig;
 import com.alipay.jarslink.api.ModuleLoader;
 import com.alipay.jarslink.api.ModuleManager;
-import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,9 +28,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+
+import static com.alipay.jarslink.api.impl.ModuleLoaderImplTest.buildModuleConfig;
 
 /**
  * 模块加载和执行测试
@@ -47,8 +43,6 @@ import java.util.Map;
 @ContextConfiguration(locations = {"classpath*:META-INF/spring/jarslink.xml"})
 public class ModuleManagerTest {
 
-    public static final String JARSLINK_MODULE_DEMO = "jarslink-module-demo-1.0.0.jar";
-
     @Autowired
     private ModuleManager moduleManager;
 
@@ -56,44 +50,18 @@ public class ModuleManagerTest {
     private ModuleLoader moduleLoader;
 
     @Test
-    public void shouldDoAction() {
-
-        Module module = loadModule();
-        String actionName = "helloworld";
-
-        moduleManager.register(module);
-        //4.1:查找和执行Action
-
-        ModuleConfig moduleConfig = new ModuleConfig();
-        moduleConfig.setName("h");
-        moduleConfig.setEnabled(true);
-
-        ModuleConfig result = module.doAction(actionName, moduleConfig);
-        Assert.assertEquals(3, module.getActions().size());
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result.getName(), moduleConfig.getName());
-        Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
-
-        //4.2:查找和执行Action
-        Action<ModuleConfig, ModuleConfig> action = module.getAction(actionName);
-        Assert.assertNotNull(action);
-        result = action.execute(moduleConfig);
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result.getName(), moduleConfig.getName());
-        Assert.assertEquals(result.getEnabled(), moduleConfig.getEnabled());
-
-        //卸载模块
-        removeModule(module);
-    }
-
-    @Test
     public void shouldRegisterModule() throws MalformedURLException {
-        //2:注册模块
-        Module module = loadModule();
+        //注册一个模块
+        Module module = loadModule("demo", "1.0");
         Module removedModule = moduleManager.register(module);
         Assert.assertNull(removedModule);
 
-        //3:查找模块
+        ////再注册同一个模块不同版本,会卸载旧的模块
+        Module newModule = loadModule("demo", "2.0");
+        removedModule = moduleManager.register(newModule);
+        Assert.assertEquals(1, moduleManager.getModules().size());
+
+        //查找模块
         Module findModule = moduleManager.find(module.getName());
         Assert.assertNotNull(findModule);
 
@@ -109,119 +77,17 @@ public class ModuleManagerTest {
     }
 
     @Test
-    public void shouldDoOverrideAction() {
-        //测试注解action被xml中的action覆盖
-        ModuleConfig config = buildModuleConfig(true);
-        config.addScanPackage("com.alipay.jarslink.main").addScanPackage("com.alipay.jarslink.demo");
+    public void shouldNotRegisterSameVersionModule() {
+        //注册一个模块
+        Module module = loadModule();
+        Module removedModule = moduleManager.register(module);
+        Assert.assertNull(removedModule);
+        Assert.assertEquals(1, moduleManager.getModules().size());
 
-        Module module = moduleLoader.load(config);
-        Action<String, String> action = null;
-        try {
-            action = module.getAction("overrideXmlAction");
-        } catch (Exception e) {
-            Assert.assertNotNull(e);
-        }
-        Assert.assertNull(action);
-    }
-
-    @Test
-    public void shouldDoAnnotationAction() {
-        //annotation方式加载，测试annotation中注入xml定义的action  同时测试annotation action和xmlaction同时加载
-        ModuleConfig config = buildModuleConfig(true);
-        config.addScanPackage("com.alipay.jarslink.main");
-        config.addScanPackage("com.alipay.jarslink.demo");
-
-        Module module = moduleLoader.load(config);
-        Assert.assertEquals(4, module.getActions().size());
-
-        //获取annotationAction  该action中注入xml中定义的xmlAction，使用xmlAction的实现
-        String result = module.doAction("annotationAction", "hello");
-        Assert.assertNotNull(result);
-        //实际结果为xmlAction返回，annotationAction作为代理
-        Assert.assertEquals(result, "xml:hello");
-
-        //4.2:查找和执行Action
-        Action<String, String> action = module.getAction("annotationAction");
-        Assert.assertNotNull(action);
-        result = action.execute("hello");
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result, "xml:hello");
-
-        //查找和执行xml bean
-        result = module.doAction("xmlAction", "hello");
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result, "xml:hello");
-
-        //4.2:查找和执行Action
-        action = module.getAction("xmlAction");
-        Assert.assertNotNull(action);
-        result = action.execute("hello");
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result, "xml:hello");
-    }
-
-    @Test
-    public void shouldDoXmlAction() {
-        //xml的方式加载
-        ModuleConfig config = buildModuleConfig(true);
-
-        Module module = moduleLoader.load(config);
-        Assert.assertEquals(3, module.getActions().size());
-        //4.2:查找annotation Action  因为xml没有配置该action所以不会被发现
-        Action<String, String> action = null;
-        try {
-            action = module.getAction("annotationAction");
-        } catch (NullPointerException e) {
-            //由于找不到action所以会抛异常
-            Assert.assertNotNull(e);
-        }
-        Assert.assertNull(action);
-
-        //查找和执行xml bean
-        String result = module.doAction("xmlAction", "hello");
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result, "xml:hello");
-
-        //4.2:查找和执行Action
-        action = module.getAction("xmlAction");
-        Assert.assertNotNull(action);
-        result = action.execute("hello");
-        Assert.assertNotNull(result);
-        Assert.assertEquals(result, "xml:hello");
-    }
-
-    /**
-     * 构建模块配置信息
-     */
-    public static ModuleConfig buildModuleConfig() {
-        return buildModuleConfig(true);
-    }
-
-    public static ModuleConfig buildModuleConfig(boolean enabled) {
-        return buildModuleConfig("demo", enabled);
-    }
-
-    public static ModuleConfig buildModuleConfig(String name, boolean enabled) {
-        URL demoModule;
-        ModuleConfig moduleConfig = new ModuleConfig();
-        //通过该方法构建的配置都是使用注解形式扫描bean的
-        String scanBase = "com.alipay.jarslink.main";
-        moduleConfig.addScanPackage(scanBase);
-        moduleConfig.removeScanPackage(scanBase);
-        Map<String, Object> properties = new HashMap();
-        moduleConfig.withEnabled(enabled).withVersion("1.0.0.20170621").withOverridePackages(ImmutableList.of(
-                "com.alipay.jarslink.demo")).withProperties(properties);
-        demoModule = Thread.currentThread().getContextClassLoader().getResource(JARSLINK_MODULE_DEMO);
-
-        moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
-
-        moduleConfig.setName(name);
-        moduleConfig.setEnabled(enabled);
-        moduleConfig.setVersion("1.0.0.20170621");
-        properties.put("url", "127.0.0.1");
-        moduleConfig.setProperties(properties);
-        moduleConfig.setModuleUrl(ImmutableList.of(demoModule));
-        return moduleConfig;
+        //再注册同一个模块,不会注册成功,返回空
+        Module register = moduleManager.register(module);
+        Assert.assertNull(register);
+        Assert.assertEquals(1, moduleManager.getModules().size());
     }
 
     private Module loadModule() {
@@ -229,11 +95,15 @@ public class ModuleManagerTest {
     }
 
     private Module loadModule(String name) {
-        return moduleLoader.load(buildModuleConfig(name, true));
+        return moduleLoader.load(buildModuleConfig(name, "1.0.0.20170621", true));
     }
 
     private void removeModule(Module module) {
         moduleManager.remove(module.getName());
+    }
+
+    private Module loadModule(String name, String version) {
+        return moduleLoader.load(buildModuleConfig(name, version, true));
     }
 
 }

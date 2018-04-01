@@ -51,8 +51,9 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
      */
     private final ConcurrentHashMap<String, RuntimeModule> allModules = new ConcurrentHashMap();
 
-    RuntimeModule getRuntimeModule(String name) {
-        return allModules.get(name.toUpperCase());
+    private RuntimeModule getRuntimeModule(String name) {
+        RuntimeModule runtimeModule = allModules.get(name.toUpperCase());
+        return runtimeModule != null ? runtimeModule : new RuntimeModule();
     }
 
     @Override
@@ -60,7 +61,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         List<Module> modules = Lists.newArrayList();
 
         for (String name : allModules.keySet()) {
-            RuntimeModule runtimeModule = getRuntimeModule(name);
+            RuntimeModule runtimeModule = getRuntimeModule((String) name);
             for (String version : runtimeModule.getModules().keySet()) {
                 modules.add(runtimeModule.getModules().get(version));
             }
@@ -78,20 +79,20 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         return find(name, defaultVersion);
     }
 
-    private String getDefaultVersion(String name) {return getRuntimeModule(name).getDefaultVersion();}
+    private String getDefaultVersion(String name) {return getRuntimeModule((String) name).getDefaultVersion();}
 
     @Override
     public Module find(String name, String version) {
         checkNotNull(name, "module name is null");
         checkNotNull(version, "module version is null");
-        return getRuntimeModule(name).getModule(version);
+        return getRuntimeModule((String) name).getModule(version);
     }
 
     @Override
     public void activeVersion(String name, String version) {
         checkNotNull(name, "module name is null");
         checkNotNull(version, "module version is null");
-        getRuntimeModule(name).setDefaultVersion(version);
+        getRuntimeModule((String) name).setDefaultVersion(version);
     }
 
     @Override
@@ -109,14 +110,23 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             LOGGER.info("register Module: {}-{}", name, version);
         }
 
+        //same module and same version can not register
+        Module registeredModule = getRuntimeModule(name).getModule(version);
+        if (registeredModule != null) {
+            return null;
+        }
+
         RuntimeModule runtimeModule = getRuntimeModule(name);
         Module oldModule = null;
-        if (runtimeModule == null) {
+        //module frist register
+        if (runtimeModule.getModules().isEmpty()) {
             runtimeModule = new RuntimeModule().withName(name).withDefaultVersion(version).addModule(module);
             allModules.put(name.toUpperCase(), runtimeModule);
         } else {
+            //the same module to register again
             oldModule = runtimeModule.getDefaultModule();
             runtimeModule.addModule(module).setDefaultVersion(version);
+            // remove module old version
             if (oldModule != null && module.getModuleConfig().isNeedUnloadOldVersion() && !runtimeModule.getModules().isEmpty()) {
                 runtimeModule.getModules().remove(oldModule.getVersion());
             }
@@ -131,14 +141,14 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Remove Module: {}", name);
         }
-        return remove(name, getRuntimeModule(name).getDefaultVersion());
+        return remove(name, getRuntimeModule((String) name).getDefaultVersion());
     }
 
     @Override
     public Module remove(String name, String version) {
         checkNotNull(name, "module name is null");
         checkNotNull(version, "module version is null");
-        return getRuntimeModule(name).getModules().remove(version);
+        return getRuntimeModule((String) name).getModules().remove(version);
     }
 
     @Override
@@ -159,7 +169,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         Map<String, String> result = Maps.newHashMap();
 
         for (String name : allModules.keySet()) {
-            RuntimeModule runtimeModule = getRuntimeModule(name);
+            RuntimeModule runtimeModule = getRuntimeModule((String) name);
             result.put(name, runtimeModule.getErrorContext());
         }
 

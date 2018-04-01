@@ -27,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import static com.alipay.jarslink.api.impl.ModuleLoaderImplTest.buildModuleConfig;
+
 /**
  * @author tengfei.fangtf
  * @version $Id: ModuleServiceTest.java, v 0.1 2017年07月21日 10:33 AM tengfei.fangtf Exp $
@@ -41,7 +43,7 @@ public class ModuleServiceTest {
     @Test
     public void shouldLoadAndRegister() {
         //先加载并注册模块
-        ModuleConfig moduleConfig = ModuleManagerTest.buildModuleConfig();
+        ModuleConfig moduleConfig = buildModuleConfig();
         Module module = moduleService.loadAndRegister(moduleConfig);
         Assert.assertNotNull(module);
         Assert.assertNotNull(module.getCreation());
@@ -50,7 +52,7 @@ public class ModuleServiceTest {
         Assert.assertEquals(moduleConfig.getVersion(), module.getVersion());
 
         //再禁用模块
-        module = moduleService.loadAndRegister(ModuleManagerTest.buildModuleConfig(false));
+        module = moduleService.loadAndRegister(buildModuleConfig(false));
         Assert.assertNull(module);
 
     }
