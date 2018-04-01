@@ -37,19 +37,8 @@ public class ConcurrentModuleManagerImplTest {
         Module m2 = moduleLoader.load(buildModuleConfig("2.0").withNeedUnloadOldVersion(false));
 
 
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                testModuleManager.register(m1);
-            }
-        });
-
-        Thread t2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                testModuleManager.register(m2);
-            }
-        });
+        Thread t1 = new Thread(new RegisterTask(testModuleManager, m1));
+        Thread t2 = new Thread(new RegisterTask(testModuleManager, m2));
 
         t1.start();
         t2.start();
@@ -61,27 +50,13 @@ public class ConcurrentModuleManagerImplTest {
             e.printStackTrace();
         }
 
-        Module m3 = testModuleManager.find("demo", "1.0");
-        Module m4 = testModuleManager.find("demo", "2.0");
-
-        //由于存在并发BUG，所以此处两个肯定有一个是null
-        Assert.assertTrue((m3 == null && m4 != null) || (m3 != null && m4 == null));
-
-        testModuleManager.disableConcurrentTest();
-    }
-
-    @Test
-    public void noConcurrentTest() {
-        Module m1 = moduleLoader.load(buildModuleConfig("1.0").withNeedUnloadOldVersion(false));
-        Module m2 = moduleLoader.load(buildModuleConfig("2.0").withNeedUnloadOldVersion(false));
-        testModuleManager.register(m1);
-        testModuleManager.register(m2);
-
         m1 = testModuleManager.find("demo", "1.0");
         m2 = testModuleManager.find("demo", "2.0");
 
-        //没有并发是表现正常，两个都能注册成功
-        Assert.assertTrue(m1 != null && m2 != null);
+        //由于存在并发BUG，所以此处两个肯定有一个是null
+        Assert.assertTrue((m1 == null && m2 != null) || (m1 != null && m2 == null));
+
+        testModuleManager.disableConcurrentTest();
     }
 
     private ModuleConfig buildModuleConfig(String version) {
