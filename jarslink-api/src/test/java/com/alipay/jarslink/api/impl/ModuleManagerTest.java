@@ -68,7 +68,9 @@ public class ModuleManagerTest {
         removeModule(module);
     }
 
-    private void removeModule(Module module) {moduleManager.remove(module.getName());}
+    private void removeModule(Module module) {
+        moduleManager.remove(module.getName());
+    }
 
     @Test
     public void shouldRegisterModule() throws MalformedURLException {
@@ -90,6 +92,23 @@ public class ModuleManagerTest {
         Assert.assertEquals(0, moduleManager.getModules().size());
 
         removeModule(module);
+    }
+
+    @Test
+    public void shouldDoOverrideAction() {
+        //测试注解action被xml中的action覆盖
+        ModuleConfig config = buildModuleConfig(true);
+        config.addScanPackage("com.alipay.jarslink.main");
+        config.addScanPackage("com.alipay.jarslink.demo");
+
+        Module module = moduleLoader.load(config);
+        Action<String, String> action = null;
+        try {
+            action = module.getAction("overrideXmlAction");
+        } catch (Exception e) {
+            Assert.assertNotNull(e);
+        }
+        Assert.assertNull(action);
     }
 
     @Test
@@ -126,17 +145,6 @@ public class ModuleManagerTest {
         result = action.execute("hello");
         Assert.assertNotNull(result);
         Assert.assertEquals(result, "xml:hello");
-
-        //测试xml中和annotation注册同名bean（不能同时存在，如果有重名的情况下以xml中的为主）
-        //4.2:查找和执行Action
-        action = null;
-        try {
-            action = module.getAction("overrideXmlAction");
-        } catch (Exception e) {
-            Assert.assertNotNull(e);
-        }
-        Assert.assertNull(action);
-        removeModule(module);
     }
 
     @Test
