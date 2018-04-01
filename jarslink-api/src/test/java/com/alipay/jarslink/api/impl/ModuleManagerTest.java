@@ -109,7 +109,6 @@ public class ModuleManagerTest {
             Assert.assertNotNull(e);
         }
         Assert.assertNull(action);
-        removeModule(module);
     }
 
     @Test
