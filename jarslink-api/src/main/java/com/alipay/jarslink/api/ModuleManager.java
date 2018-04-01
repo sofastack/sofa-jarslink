@@ -38,7 +38,8 @@ public interface ModuleManager {
 
     /**
      * 根据模块名和版本查找Module
-     * @param name   模块名称
+     *
+     * @param name    模块名称
      * @param version 模块版本号
      * @return
      */
@@ -68,12 +69,13 @@ public interface ModuleManager {
     List<Module> getModules();
 
     /**
-     * 注册一个Module
+     * 注册一个Module，同时该module将会被设置为默认module
      *
      * @param module 模块
      * @return 旧模块, 如果没有旧模块则返回null
+     * @throws ModuleRuntimeException 如果当前系统中存在该模块那么将会抛出该异常
      */
-    Module register(Module module);
+    Module register(Module module) throws ModuleRuntimeException;
 
     /**
      * 移除已激活版本的Module
@@ -86,8 +88,8 @@ public interface ModuleManager {
     /**
      * 移除一个Module
      *
-     * @param name 模块名
-     * @param version  版本号
+     * @param name    模块名
+     * @param version 版本号
      * @return 被移除的模块
      */
     Module remove(String name, String version);
