@@ -65,6 +65,12 @@
             <artifactId>guava</artifactId>
             <version>17.0</version>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.alipay.jarslink</groupId>-->
+            <!--<artifactId>inject-test</artifactId>-->
+            <!--<version>1.0.0</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
         <!-- demo end  -->
 
 

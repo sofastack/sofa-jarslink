@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
-       xmlns:context="http://www.springframework.org/schema/context" xmlns:webflow="http://www.springframework.org/schema/webflow-config"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:webflow="http://www.springframework.org/schema/webflow-config"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
          http://www.springframework.org/schema/webflow-config http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.0.xsd"
@@ -11,4 +12,15 @@
 
     <bean id="helloWorldAction"
           class="com.alipay.jarslink.demo.HelloWorldAction"/>
+
+    <bean id="overrideTestBeanAction"
+          class="com.alipay.jarslink.demo.OverrideTestBeanAction">
+        <property name="helloWorldBean" ref="helloWorldBean"/>
+    </bean>
+
+    <bean id="helloWorldBean"
+          class="com.alipay.jarslink.demo.HelloWorldBean"/>
+
+    <bean id="xmlAction"
+          class="com.alipay.jarslink.demo.XmlAction"/>
 </beans>

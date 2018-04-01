@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.alipay.jarslink</groupId>
     <artifactId>jarslink-api</artifactId>
-    <version>1.5.0.20180217</version>
+    <version>1.6.1.20180301</version>
     <name>Alipay JarsLink API</name>
     <url>https://github.com/alibaba/jarslink</url>
     <packaging>jar</packaging>
@@ -18,7 +18,7 @@
         <apache.commons.collections.version>3.2.1</apache.commons.collections.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
+        <java.version>1.6</java.version>
     </properties>
 
     <organization>
@@ -58,7 +58,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
+            <artifactId>spring-context</artifactId>
             <version>${org.springframework.version}</version>
             <optional>true</optional>
         </dependency>

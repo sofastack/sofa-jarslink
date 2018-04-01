@@ -31,7 +31,7 @@ import org.springframework.beans.CachedIntrospectionResults;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -57,13 +58,9 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
     private static final Logger LOGGER = LoggerFactory.getLogger(ModuleLoaderImpl.class);
 
     /**
-     * Spring bean文件所在目录
-     */
-    public static String SPRING_XML_PATTERN  = "classpath*:META-INF/spring/*.xml";
-    /**
      * Spring bean文件所在目录,不同的路径确保能取到资源
      */
-    public static String SPRING_XML_PATTERN2 = "classpath*:*META-INF/spring/*.xml";
+    private static String[] SPRING_XML_PATTERN = {"classpath*:META-INF/spring/*.xml", "classpath*:*META-INF/spring/*.xml"};
 
     /**
      * 模块版本属性
@@ -100,7 +97,15 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Loading module  complete：{}", moduleConfig);
         }
-        return new SpringModule(moduleConfig, moduleConfig.getVersion(), moduleConfig.getName(), moduleApplicationContext);
+        return new SpringModule(moduleConfig, moduleConfig.getVersion(), moduleConfig.getName(),
+                moduleApplicationContext);
+    }
+
+    @Override
+    public void unload(Module module) {
+        if (module != null) {
+            module.destroy();
+        }
     }
 
     /**
@@ -110,23 +115,42 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      * @param tempFileJarURLs
      * @return
      */
-    private ClassPathXmlApplicationContext loadModuleApplication(ModuleConfig moduleConfig, List<String> tempFileJarURLs) {
+    private ConfigurableApplicationContext loadModuleApplication(ModuleConfig moduleConfig, List<String>
+            tempFileJarURLs) {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
         //获取模块的ClassLoader
-        ClassLoader moduleClassLoader = new ModuleClassLoader(moduleConfig.getModuleUrl(), applicationContext.getClassLoader(),
-                getOverridePackages(moduleConfig));
+        ClassLoader moduleClassLoader = new ModuleClassLoader(moduleConfig.getModuleUrl(), applicationContext
+                .getClassLoader(), getOverridePackages(moduleConfig));
 
         try {
             //把当前线程的ClassLoader切换成模块的
             Thread.currentThread().setContextClassLoader(moduleClassLoader);
-            ModuleApplicationContext moduleApplicationContext = new ModuleApplicationContext(applicationContext);
+
+            ConfigurableApplicationContext context;
             Properties properties = getProperties(moduleConfig);
-            moduleApplicationContext.setProperties(properties);
-            moduleApplicationContext.setClassLoader(moduleClassLoader);
-            moduleApplicationContext.setConfigLocations(findSpringConfigs(tempFileJarURLs, moduleClassLoader,
-                    getExclusionConfigeNameList(properties)));
-            moduleApplicationContext.refresh();
-            return moduleApplicationContext;
+            Set<String> scanBase = moduleConfig.getScanPackages();
+            //注解方式加载bean
+            if (!scanBase.isEmpty()) {
+                ModuleAnnotationApplicationContext annotationConfigApplicationContext = new
+                        ModuleAnnotationApplicationContext(properties);
+                annotationConfigApplicationContext.scan(scanBase.toArray(new String[0]));
+                context = annotationConfigApplicationContext;
+            } else {
+                //XML方式加载bean
+                ModuleXmlApplicationContext moduleApplicationContext = new ModuleXmlApplicationContext();
+                moduleApplicationContext.setProperties(properties);
+                moduleApplicationContext.setConfigLocations(findSpringConfigs(tempFileJarURLs, moduleClassLoader,
+                        getExclusionConfigeNameList(properties)));
+                context = moduleApplicationContext;
+            }
+            context.setParent(applicationContext);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("module {}:{} allow current process to override bean in module", moduleConfig.getName(),
+                        moduleConfig.getVersion());
+            }
+            ((DefaultResourceLoader) context).setClassLoader(moduleClassLoader);
+            context.refresh();
+            return context;
         } catch (Throwable e) {
             CachedIntrospectionResults.clearClassLoader(moduleClassLoader);
             throw Throwables.propagate(e);
@@ -138,6 +162,7 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     /**
      * 获取不加载的spring配置文件名称
+     *
      * @param properties
      * @return
      */
@@ -173,12 +198,12 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      * @param moduleClassLoader
      * @return
      */
-    private String[] findSpringConfigs(List<String> tempFileJarURLs, ClassLoader moduleClassLoader, List<String> exclusionConfigeNameList) {
+    private String[] findSpringConfigs(List<String> tempFileJarURLs, ClassLoader moduleClassLoader, List<String>
+            exclusionConfigeNameList) {
         try {
-            PathMatchingResourcePatternResolver pmr = new PathMatchingResourcePatternResolver(
-                    moduleClassLoader);
-            Resource[] resources = ImmutableSet.builder().add(pmr.getResources(SPRING_XML_PATTERN)).add(
-                    pmr.getResources(SPRING_XML_PATTERN2)).build().toArray(new Resource[] {});
+            PathMatchingResourcePatternResolver pmr = new PathMatchingResourcePatternResolver(moduleClassLoader);
+            Resource[] resources = ImmutableSet.builder().add(pmr.getResources(SPRING_XML_PATTERN[0])).add(pmr
+                    .getResources(SPRING_XML_PATTERN[1])).build().toArray(new Resource[] {});
             checkNotNull(resources, "resources is null");
             checkArgument(resources.length > 0, "resources length is 0");
             // 因为ClassLoader是树形结构，这里会找到ModuleClassLoader以及其父类中所有符合规范的spring配置文件，所以这里需要过滤，只需要Module Jar中的
@@ -197,8 +222,8 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      * @return
      * @throws IOException
      */
-    private String[] filterURLsIncludedResources(List<String> tempFileJarURLs, Resource[] resources, List<String> exclusionConfigeNameList)
-            throws IOException {
+    private String[] filterURLsIncludedResources(List<String> tempFileJarURLs, Resource[] resources, List<String>
+            exclusionConfigeNameList) throws IOException {
         List<String> configLocations = Lists.newArrayList();
         for (Resource resource : resources) {
             String configLocation = resource.getURL().toString();

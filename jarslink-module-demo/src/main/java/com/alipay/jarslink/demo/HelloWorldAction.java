@@ -5,10 +5,8 @@ import com.alipay.jarslink.api.ModuleConfig;
 
 /**
  * 一个简单的Action实现
- *
  */
 public class HelloWorldAction implements Action<ModuleConfig, ModuleConfig> {
-
     @Override
     public ModuleConfig execute(ModuleConfig actionRequest) {
         ModuleConfig moduleConfig = new ModuleConfig();
@@ -25,5 +23,4 @@ public class HelloWorldAction implements Action<ModuleConfig, ModuleConfig> {
     public String getActionName() {
         return "helloworld";
     }
-
 }
