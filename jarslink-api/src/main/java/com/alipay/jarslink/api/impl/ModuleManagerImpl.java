@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -53,35 +54,24 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
      * <p>
      * 使用HashMap替换ConcurrentHashMap，内部使用ReentrantReadWriteLock控制并发逻辑
      */
-    private final Map<String, RuntimeModule> allModules = new HashMap();
+    private final Map<String, RuntimeModule> allModules = new ConcurrentHashMap();
     /**
      * 操作allModules的资源锁
      */
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     private RuntimeModule getRuntimeModule(String name) {
-        return readExec(new Callable<RuntimeModule>() {
-            @Override
-            public RuntimeModule call() {
-                RuntimeModule runtimeModule = allModules.get(name.toUpperCase());
-                return runtimeModule != null ? runtimeModule : new RuntimeModule();
-            }
-        });
+        RuntimeModule runtimeModule = allModules.get(name.toUpperCase());
+        return runtimeModule != null ? runtimeModule : new RuntimeModule();
     }
 
     @Override
     public List<Module> getModules() {
         final List<Module> modules = Lists.newArrayList();
-        readExec(new Callable<Object>() {
-            @Override
-            public Integer call() {
-                for (Map.Entry<String, RuntimeModule> moduleEntry : allModules.entrySet()) {
-                    RuntimeModule runtimeModule = moduleEntry.getValue();
-                    modules.addAll(runtimeModule.getModules().values());
-                }
-                return null;
-            }
-        });
+        for (Map.Entry<String, RuntimeModule> moduleEntry : allModules.entrySet()) {
+            RuntimeModule runtimeModule = moduleEntry.getValue();
+            modules.addAll(runtimeModule.getModules().values());
+        }
         return ImmutableList.copyOf(filter(modules, instanceOf(SpringModule.class)));
     }
 
@@ -194,17 +184,12 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
     @Override
     public Map<String, String> getErrorModuleContext() {
-        return readExec(new Callable<Map<String, String>>() {
-            @Override
-            public Map<String, String> call() {
-                final Map<String, String> result = Maps.newHashMap();
-                for (String name : allModules.keySet()) {
-                    RuntimeModule runtimeModule = getRuntimeModule(name);
-                    result.put(name, runtimeModule.getErrorContext());
-                }
-                return result;
-            }
-        });
+        final Map<String, String> result = Maps.newHashMap();
+        for (String name : allModules.keySet()) {
+            RuntimeModule runtimeModule = getRuntimeModule(name);
+            result.put(name, runtimeModule.getErrorContext());
+        }
+        return result;
     }
 
     /**
@@ -222,26 +207,6 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             StringBuilder sb = new StringBuilder();
             sb.append("duplicate module :[").append(name).append(":").append(version).append("]");
             throw new ModuleRuntimeException(sb.toString());
-        }
-    }
-
-
-    /**
-     * 对allModules的读操作
-     *
-     * @param operation 操作
-     * @param <T>       操作返回值类型
-     * @return 操作结果
-     */
-    private <T> T readExec(Callable<T> operation) {
-        Lock readlock = lock.readLock();
-        readlock.lock();
-        try {
-            return operation.call();
-        } catch (Exception e) {
-            throw new ModuleRuntimeException("readExec error", e);
-        } finally {
-            readlock.unlock();
         }
     }
 
