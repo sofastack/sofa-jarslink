@@ -73,9 +73,10 @@ public interface ModuleManager {
      *
      * @param module 模块
      * @return 旧模块, 如果没有旧模块则返回null
-     * @throws ModuleRuntimeException 如果当前系统中存在该模块那么将会抛出该异常
+     * <p>
+     * <strong>如果当前系统中已经存在该模块那么将会抛出该异常</strong>
      */
-    Module register(Module module) throws ModuleRuntimeException;
+    Module register(Module module);
 
     /**
      * 移除已激活版本的Module
