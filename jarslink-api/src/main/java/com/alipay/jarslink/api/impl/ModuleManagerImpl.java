@@ -29,10 +29,7 @@ import org.springframework.beans.factory.DisposableBean;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.instanceOf;
@@ -50,14 +47,8 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
     /**
      * 已注册的所有模块,key:moduleName upperCase
-     * <p>
-     * 使用HashMap替换ConcurrentHashMap，内部使用ReentrantReadWriteLock控制并发逻辑
      */
     private final Map<String, RuntimeModule> allModules = new ConcurrentHashMap();
-    /**
-     * 操作allModules的资源锁
-     */
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     private RuntimeModule getRuntimeModule(String name) {
         RuntimeModule runtimeModule = allModules.get(name.toUpperCase());
@@ -108,7 +99,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
     }
 
     @Override
-    public Module register(Module module) {
+    public synchronized Module register(Module module) {
         checkNotNull(module, "module is null");
         final String name = module.getName();
         final String version = module.getVersion();
@@ -119,30 +110,25 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         //此处如果不加读锁，那么多线程情况下有可能同时进入runtimeModule.getModules().isEmpty()，此时多个线程
         //将同时调用allModules.put(name.toUpperCase(), runtimeModule)，而由于key相同，此时只有一个线程会成功，而
         //失败的线程也无法得知自己已经失败
-        return writeExec(new Callable<Module>() {
-            @Override
-            public Module call() {
-                //如果当前系统存在该模块那么应该抛出异常，否则外部调用无法得知是否注册成功
-                ModuleManagerImpl.this.checkDuplicate(name, version);
+        //如果当前系统存在该模块那么应该抛出异常，否则外部调用无法得知是否注册成功
+        checkDuplicate(name, version);
 
-                RuntimeModule runtimeModule = getRuntimeModule(name);
-                Module oldModule = null;
-                //module frist register
-                if (runtimeModule.getModules().isEmpty()) {
-                    runtimeModule = new RuntimeModule().withName(name).withDefaultVersion(version).addModule(module);
-                    allModules.put(name.toUpperCase(), runtimeModule);
-                } else {
-                    //the same module to register again
-                    oldModule = runtimeModule.getDefaultModule();
-                    runtimeModule.addModule(module).setDefaultVersion(version);
-                    // remove module old version
-                    if (oldModule != null && module.getModuleConfig().isNeedUnloadOldVersion()) {
-                        runtimeModule.getModules().remove(oldModule.getVersion());
-                    }
-                }
-                return oldModule;
+        RuntimeModule runtimeModule = getRuntimeModule(name);
+        Module oldModule = null;
+        //module frist register
+        if (runtimeModule.getModules().isEmpty()) {
+            runtimeModule = new RuntimeModule().withName(name).withDefaultVersion(version).addModule(module);
+            allModules.put(name.toUpperCase(), runtimeModule);
+        } else {
+            //the same module to register again
+            oldModule = runtimeModule.getDefaultModule();
+            runtimeModule.addModule(module).setDefaultVersion(version);
+            // remove module old version
+            if (oldModule != null && module.getModuleConfig().isNeedUnloadOldVersion()) {
+                runtimeModule.getModules().remove(oldModule.getVersion());
             }
-        });
+        }
+        return oldModule;
     }
 
 
@@ -164,21 +150,15 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
     @Override
     public void destroy() throws Exception {
-        writeExec(new Callable<Object>() {
-            @Override
-            public Object call() {
-                for (Module each : getModules()) {
-                    try {
-                        each.destroy();
-                    } catch (Exception e) {
-                        LOGGER.error("Failed to destroy module: " + each.getName(), e);
-                    }
-                }
-
-                allModules.clear();
-                return null;
+        for (Module each : getModules()) {
+            try {
+                each.destroy();
+            } catch (Exception e) {
+                LOGGER.error("Failed to destroy module: " + each.getName(), e);
             }
-        });
+        }
+
+        allModules.clear();
     }
 
     @Override
@@ -206,25 +186,6 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             StringBuilder sb = new StringBuilder();
             sb.append("duplicate module :[").append(name).append(":").append(version).append("]");
             throw new ModuleRuntimeException(sb.toString());
-        }
-    }
-
-    /**
-     * 对allModules的写操作
-     *
-     * @param operation 操作
-     * @param <T>       操作返回值类型
-     * @return 操作结果
-     */
-    private <T> T writeExec(Callable<T> operation) {
-        Lock writeLock = lock.writeLock();
-        writeLock.lock();
-        try {
-            return operation.call();
-        } catch (Exception e) {
-            throw new ModuleRuntimeException("writeExec error", e);
-        } finally {
-            writeLock.unlock();
         }
     }
 }
