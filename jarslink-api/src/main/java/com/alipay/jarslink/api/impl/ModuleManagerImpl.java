@@ -183,9 +183,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         runtimeModule = runtimeModule != null ? runtimeModule : new RuntimeModule();
         Module registeredModule = runtimeModule.getModule(version);
         if (registeredModule != null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("duplicate module :[").append(name).append(":").append(version).append("]");
-            throw new ModuleRuntimeException(sb.toString());
+            throw new ModuleRuntimeException("duplicate module :[" + name + ":" + version + "]");
         }
     }
 }
