@@ -47,7 +47,8 @@ public class ConcurrentModuleManagerImplTest {
             t1.join();
             t2.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            //此处不会抛出异常
+            Assert.assertNull(e);
         }
 
         m1 = testModuleManager.find("demo", "1.0");
