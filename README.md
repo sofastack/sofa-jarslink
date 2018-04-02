@@ -1,4 +1,7 @@
-# Feature
+
+
+
+# JarsLink Feature
 
 
 - Class isolation
@@ -43,8 +46,8 @@ Based on a deep understanding of what was missing in available development frame
 
 # DOCUMENT
 
-- [中文版](https://github.com/alibaba/jarslink/wiki/JarsLink-主页)
-- English
+- [中文版](https://github.com/alibaba/jarslink/wiki/index-cn)
+- [English](https://github.com/alibaba/jarslink/wiki/index)
 
 # DOWNLOAD
 
