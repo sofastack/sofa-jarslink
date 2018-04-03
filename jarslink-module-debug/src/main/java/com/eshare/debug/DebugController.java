@@ -22,7 +22,7 @@ import java.util.Map;
  * Email:10856214@163.com
  */
 @RestController
-@RequestMapping("/dubug/test")
+@RequestMapping("/dubug")
 public class DebugController {
 
     @Autowired
