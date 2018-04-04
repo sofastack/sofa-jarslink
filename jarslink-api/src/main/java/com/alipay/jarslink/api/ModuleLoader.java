@@ -29,7 +29,6 @@ public interface ModuleLoader {
      * 根据配置加载一个模块，创建一个新的ClassLoadr加载jar里的class，初始化Spring ApplicationContext等
      *
      * @param moduleConfig 模块配置信息
-     *
      * @return 加载成功的模块
      */
     Module load(ModuleConfig moduleConfig);
@@ -41,4 +40,59 @@ public interface ModuleLoader {
      */
     void unload(Module module);
 
+    /**
+     * 注册ApplicationContext前置处理器
+     *
+     * @param aware 要注册的前置处理器
+     */
+    void registerAware(ApplicationContextAware aware);
+
+    /**
+     * 注册Module前置处理器
+     *
+     * @param aware 要注册的前置处理器
+     */
+    void registerAware(ModuleAware aware);
+
+    /**
+     * 注册ApplicationContext后处理器
+     *
+     * @param postProcessor 要注册的后处理器
+     */
+    void registerPostProcessor(ApplicationContextPostProcessor postProcessor);
+
+    /**
+     * 注册Module后处理器
+     *
+     * @param postProcessor 要注册的后处理器
+     */
+    void registerPostProcessor(ModulePostProcessor postProcessor);
+
+    /**
+     * 移除ApplicationContext前置处理器
+     *
+     * @param aware 要移除的前置处理器
+     */
+    void unRegisterAware(ApplicationContextAware aware);
+
+    /**
+     * 移除Module前置处理器
+     *
+     * @param aware 要移除的前置处理器
+     */
+    void unRegisterAware(ModuleAware aware);
+
+    /**
+     * 移除ApplicationContext后处理器
+     *
+     * @param postProcessor 要移除的后处理器
+     */
+    void unRegisterPostProcessor(ApplicationContextPostProcessor postProcessor);
+
+    /**
+     * 移除Module后处理器
+     *
+     * @param postProcessor 要移除的后处理器
+     */
+    void unRegisterPostProcessor(ModulePostProcessor postProcessor);
 }
