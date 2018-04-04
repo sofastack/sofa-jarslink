@@ -17,9 +17,7 @@
  */
 package com.alipay.jarslink.api.impl;
 
-import com.alipay.jarslink.api.Module;
-import com.alipay.jarslink.api.ModuleConfig;
-import com.alipay.jarslink.api.ModuleLoader;
+import com.alipay.jarslink.api.*;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -41,6 +39,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -60,7 +59,8 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
     /**
      * Spring bean文件所在目录,不同的路径确保能取到资源
      */
-    private static String[] SPRING_XML_PATTERN = {"classpath*:META-INF/spring/*.xml", "classpath*:*META-INF/spring/*.xml"};
+    private static String[] SPRING_XML_PATTERN = {"classpath*:META-INF/spring/*.xml", "classpath*:*META-INF/spring/*" +
+            ".xml"};
 
     /**
      * 模块版本属性
@@ -82,6 +82,13 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      */
     private ApplicationContext applicationContext;
 
+    private final List<com.alipay.jarslink.api.ApplicationContextAware> applicationContextAwares = new
+            CopyOnWriteArrayList<com.alipay.jarslink.api.ApplicationContextAware>();
+    private final List<ModuleAware> moduleAwares = new CopyOnWriteArrayList<ModuleAware>();
+    private final List<ApplicationContextPostProcessor> applicationContextPostProcessors = new
+            CopyOnWriteArrayList<ApplicationContextPostProcessor>();
+    private final List<ModulePostProcessor> modulePostProcessors = new CopyOnWriteArrayList<ModulePostProcessor>();
+
     @Override
     public Module load(ModuleConfig moduleConfig) {
         if (LOGGER.isInfoEnabled()) {
@@ -92,19 +99,95 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
             LOGGER.info("Local jars: {}", tempFileJarURLs);
         }
 
+        doModuleAware(moduleConfig);
+
         ConfigurableApplicationContext moduleApplicationContext = loadModuleApplication(moduleConfig, tempFileJarURLs);
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Loading module  complete：{}", moduleConfig);
         }
-        return new SpringModule(moduleConfig, moduleConfig.getVersion(), moduleConfig.getName(),
+        Module module = new SpringModule(moduleConfig, moduleConfig.getVersion(), moduleConfig.getName(),
                 moduleApplicationContext);
+        doModulePostProcessor(module, moduleConfig);
+        return module;
     }
 
     @Override
     public void unload(Module module) {
         if (module != null) {
             module.destroy();
+        }
+    }
+
+    @Override
+    public void registerAware(com.alipay.jarslink.api.ApplicationContextAware aware) {
+        checkArgument(aware == null, "aware must be not null");
+        applicationContextAwares.add(aware);
+    }
+
+    @Override
+    public void registerAware(ModuleAware aware) {
+        checkArgument(aware == null, "aware must be not null");
+        moduleAwares.add(aware);
+    }
+
+    @Override
+    public void registerPostProcessor(ApplicationContextPostProcessor postProcessor) {
+        checkArgument(postProcessor == null, "PostProcessor must be not null");
+        applicationContextPostProcessors.add(postProcessor);
+    }
+
+    @Override
+    public void registerPostProcessor(ModulePostProcessor postProcessor) {
+        checkArgument(postProcessor == null, "PostProcessor must be not null");
+        modulePostProcessors.add(postProcessor);
+    }
+
+    @Override
+    public void unRegisterAware(com.alipay.jarslink.api.ApplicationContextAware aware) {
+        if (aware == null) return;
+        applicationContextAwares.remove(aware);
+    }
+
+    @Override
+    public void unRegisterAware(ModuleAware aware) {
+        if (aware == null) return;
+        moduleAwares.remove(aware);
+    }
+
+    @Override
+    public void unRegisterPostProcessor(ApplicationContextPostProcessor postProcessor) {
+        if (postProcessor == null) return;
+        applicationContextPostProcessors.remove(postProcessor);
+    }
+
+    @Override
+    public void unRegisterPostProcessor(ModulePostProcessor postProcessor) {
+        if (postProcessor == null) return;
+        modulePostProcessors.remove(postProcessor);
+    }
+
+    private void doApplicationContextAware(ConfigurableApplicationContext context, ModuleConfig moduleConfig) {
+        for (com.alipay.jarslink.api.ApplicationContextAware aware : applicationContextAwares) {
+            aware.setConfigurableApplicationContext(context, moduleConfig);
+        }
+    }
+
+    private void doModuleAware(ModuleConfig moduleConfig) {
+        for (ModuleAware aware : moduleAwares) {
+            aware.setModuleConfig(moduleConfig);
+        }
+    }
+
+    private void doApplicationContextPostProcessor(ConfigurableApplicationContext context, ModuleConfig moduleConfig) {
+        for (ApplicationContextPostProcessor postProcessor : applicationContextPostProcessors) {
+            postProcessor.setConfigurableApplicationContext(context, moduleConfig);
+        }
+    }
+
+    private void doModulePostProcessor(Module module, ModuleConfig moduleConfig) {
+        for (ModulePostProcessor postProcessor : modulePostProcessors) {
+            postProcessor.setModule(module, moduleConfig);
         }
     }
 
@@ -149,7 +232,9 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
                         moduleConfig.getVersion());
             }
             ((DefaultResourceLoader) context).setClassLoader(moduleClassLoader);
+            doApplicationContextAware(context, moduleConfig);
             context.refresh();
+            doApplicationContextPostProcessor(context, moduleConfig);
             return context;
         } catch (Throwable e) {
             CachedIntrospectionResults.clearClassLoader(moduleClassLoader);
@@ -203,7 +288,7 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
         try {
             PathMatchingResourcePatternResolver pmr = new PathMatchingResourcePatternResolver(moduleClassLoader);
             Resource[] resources = ImmutableSet.builder().add(pmr.getResources(SPRING_XML_PATTERN[0])).add(pmr
-                    .getResources(SPRING_XML_PATTERN[1])).build().toArray(new Resource[] {});
+                    .getResources(SPRING_XML_PATTERN[1])).build().toArray(new Resource[]{});
             checkNotNull(resources, "resources is null");
             checkArgument(resources.length > 0, "resources length is 0");
             // 因为ClassLoader是树形结构，这里会找到ModuleClassLoader以及其父类中所有符合规范的spring配置文件，所以这里需要过滤，只需要Module Jar中的

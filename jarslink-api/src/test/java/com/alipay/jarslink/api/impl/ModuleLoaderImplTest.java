@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author tengfei.fang
  * @version $Id: ModuleLoaderImplTest.java, v 0.1 2018年04月01日 12:12 PM tengfei.fang Exp $
  */
@@ -37,9 +36,10 @@ public class ModuleLoaderImplTest {
     @Test
     public void shouldLoadModule() {
         //1:加载模块
-        Module module = loadModule();
+        String version = Double.toString(Math.random());
+        Module module = loadModuleWithVersion(version);
         Assert.assertEquals("demo", module.getName());
-        Assert.assertEquals("1.0.0.20170621", module.getVersion());
+        Assert.assertEquals(version, module.getVersion());
         Assert.assertEquals(3, module.getActions().size());
         Assert.assertNotNull(module);
         Assert.assertNotNull(module.getCreation());
@@ -68,7 +68,7 @@ public class ModuleLoaderImplTest {
     @Test
     public void shouldDoAction() {
 
-        Module module = loadModule();
+        Module module = loadModuleWithVersion(Double.toString(Math.random()));
         String actionName = "helloworld";
 
         //4.1:查找和执行Action
@@ -193,11 +193,11 @@ public class ModuleLoaderImplTest {
     }
 
     public static ModuleConfig buildModuleConfig(boolean enabled) {
-        return buildModuleConfig("demo", "1.0.0.20170621", enabled);
+        return buildModuleConfig("demo", Double.toString(Math.random()), enabled);
     }
 
     public static ModuleConfig buildModuleConfig(String name, boolean enabled) {
-        return buildModuleConfig(name, "1.0.0.20170621", enabled);
+        return buildModuleConfig(name, Double.toString(Math.random()), enabled);
     }
 
     public static ModuleConfig buildModuleConfig(String name, String version, boolean enabled) {
@@ -208,23 +208,23 @@ public class ModuleLoaderImplTest {
         moduleConfig.addScanPackage(scanBase);
         moduleConfig.removeScanPackage(scanBase);
         Map<String, Object> properties = new HashMap();
-        moduleConfig.withEnabled(enabled).withVersion("1.0.0.20170621").withOverridePackages(ImmutableList.of(
-                "com.alipay.jarslink.demo")).withProperties(properties);
+        moduleConfig.withEnabled(enabled).withVersion(version).withOverridePackages(ImmutableList.of("com.alipay" + "" +
+                ".jarslink.demo")).withProperties(properties);
         demoModule = Thread.currentThread().getContextClassLoader().getResource(JARSLINK_MODULE_DEMO);
 
         moduleConfig.setOverridePackages(ImmutableList.of("com.alipay.jarslink.demo"));
 
         moduleConfig.setName(name);
         moduleConfig.setEnabled(enabled);
-        moduleConfig.setVersion("1.0.0.20170621");
+        moduleConfig.setVersion(version);
         properties.put("url", "127.0.0.1");
         moduleConfig.setProperties(properties);
         moduleConfig.setModuleUrl(ImmutableList.of(demoModule));
         return moduleConfig;
     }
 
-    private Module loadModule() {
-        return moduleLoader.load(buildModuleConfig(true));
+    private Module loadModuleWithVersion(String version) {
+        return moduleLoader.load(buildModuleConfig("demo", version, true));
     }
 
     private Module loadModule(String name) {
