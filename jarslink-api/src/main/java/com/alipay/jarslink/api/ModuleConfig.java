@@ -17,6 +17,7 @@
  */
 package com.alipay.jarslink.api;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -28,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -62,7 +62,7 @@ public class ModuleConfig extends ToStringObject {
      * <p>
      * <strong>xml中的bean不能依赖注解bean，注解bean可以依赖xml定义的bean</strong>
      */
-    private Set<String> scanPackages = new CopyOnWriteArraySet<>();
+    private Set<String> scanPackages = new CopyOnWriteArraySet<String>();
 
     /**
      * 模块的版本，如1.0.0.20120609 版本变化会触发模块重新部署
@@ -102,7 +102,13 @@ public class ModuleConfig extends ToStringObject {
 
     public List<String> getModuleUrlPath() {
         List<String> moduleUrls = Lists.newArrayList();
-        moduleUrls.addAll(moduleUrl.stream().map(URL::toString).collect(Collectors.toList()));
+        List<String> list = Lists.transform(moduleUrl, new Function<URL, String>() {
+            @Override
+            public String apply(URL input) {
+                return input.toString();
+            }
+        });
+        moduleUrls.addAll(list);
         return moduleUrls;
     }
 
