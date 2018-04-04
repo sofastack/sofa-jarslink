@@ -121,25 +121,25 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
 
     @Override
     public void registerAware(com.alipay.jarslink.api.ApplicationContextAware aware) {
-        checkArgument(aware == null, "aware must be not null");
+        checkArgument(aware != null, "aware must be not null");
         applicationContextAwares.add(aware);
     }
 
     @Override
     public void registerAware(ModuleAware aware) {
-        checkArgument(aware == null, "aware must be not null");
+        checkArgument(aware != null, "aware must be not null");
         moduleAwares.add(aware);
     }
 
     @Override
     public void registerPostProcessor(ApplicationContextPostProcessor postProcessor) {
-        checkArgument(postProcessor == null, "PostProcessor must be not null");
+        checkArgument(postProcessor != null, "PostProcessor must be not null");
         applicationContextPostProcessors.add(postProcessor);
     }
 
     @Override
     public void registerPostProcessor(ModulePostProcessor postProcessor) {
-        checkArgument(postProcessor == null, "PostProcessor must be not null");
+        checkArgument(postProcessor != null, "PostProcessor must be not null");
         modulePostProcessors.add(postProcessor);
     }
 
