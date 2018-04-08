@@ -9,6 +9,8 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
+ * 开启模块间调用的拦截
+ *
  * @author joe
  * @version 2018.04.04 14:54
  */
