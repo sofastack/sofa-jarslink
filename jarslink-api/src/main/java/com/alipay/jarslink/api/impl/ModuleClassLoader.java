@@ -49,7 +49,7 @@ public class ModuleClassLoader extends URLClassLoader {
     /**
      * 需要排除的包
      */
-    private final Set<String> excludedPackages = new HashSet<>();
+    private final Set<String> excludedPackages = new HashSet<String>();
 
     /**
      * 需要子加载器优先加载的包

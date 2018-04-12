@@ -20,6 +20,7 @@ package com.alipay.jarslink.api.impl;
 import com.alipay.jarslink.api.Module;
 import com.alipay.jarslink.api.ModuleLoader;
 import com.alipay.jarslink.api.ModuleManager;
+import com.alipay.jarslink.api.ModuleRuntimeException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,8 +85,13 @@ public class ModuleManagerTest {
         Assert.assertNull(removedModule);
         Assert.assertEquals(1, moduleManager.getModules().size());
 
-        //再注册同一个模块,不会注册成功,返回空
-        Module register = moduleManager.register(module);
+        //再注册同一个模块,将会抛出异常
+        Module register = null;
+        try {
+            register = moduleManager.register(module);
+        } catch (ModuleRuntimeException e) {
+            Assert.assertNotNull(e);
+        }
         Assert.assertNull(register);
         Assert.assertEquals(1, moduleManager.getModules().size());
     }
