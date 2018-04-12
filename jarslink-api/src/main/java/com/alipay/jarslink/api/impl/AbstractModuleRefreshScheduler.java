@@ -174,7 +174,7 @@ public abstract class AbstractModuleRefreshScheduler implements InitializingBean
     private Collection<ModuleConfig> filterEnabledModule() {
         List<ModuleConfig> moduleConfigs = queryModuleConfigs();
         if (moduleConfigs == null || moduleConfigs.isEmpty()) {
-            return new ArrayList<>();
+            return new ArrayList<ModuleConfig>();
         }
         return Collections2.filter(moduleConfigs, new Predicate<ModuleConfig>() {
             @Override
