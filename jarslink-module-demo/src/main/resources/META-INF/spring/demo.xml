@@ -9,6 +9,8 @@
        default-autowire="byName">
 
     <context:annotation-config/>
+    
+    <context:component-scan base-package="com.alipay.jarslink.demo"/>
 
     <bean id="helloWorldAction"
           class="com.alipay.jarslink.demo.HelloWorldAction"/>

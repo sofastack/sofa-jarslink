@@ -18,6 +18,7 @@
 package com.alipay.jarslink.api.impl;
 
 import com.alipay.jarslink.api.Module;
+import com.alipay.jarslink.api.ModuleListener;
 import com.alipay.jarslink.api.ModuleManager;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,7 +51,9 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
     /**
      * 已注册的所有模块,key:moduleName upperCase
      */
-    private final ConcurrentHashMap<String, RuntimeModule> allModules = new ConcurrentHashMap();
+    private final ConcurrentHashMap<String, RuntimeModule> allModules = new ConcurrentHashMap<String, RuntimeModule>();
+    
+    private List<ModuleListener> listeners;
 
     private RuntimeModule getRuntimeModule(String name) {
         RuntimeModule runtimeModule = allModules.get(name.toUpperCase());
@@ -109,19 +113,23 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("register Module: {}-{}", name, version);
         }
-
         //same module and same version can not register
         Module registeredModule = getRuntimeModule(name).getModule(version);
         if (registeredModule != null) {
+        	if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("not can register Module: {}-{}, destroy it.", name, version);
+            }
+        	onDestroyModule(registeredModule);
+        	module.destroy();
             return null;
         }
-
         RuntimeModule runtimeModule = getRuntimeModule(name);
         Module oldModule = null;
         //module frist register
         if (runtimeModule.getModules().isEmpty()) {
             runtimeModule = new RuntimeModule().withName(name).withDefaultVersion(version).addModule(module);
             allModules.put(name.toUpperCase(), runtimeModule);
+            onModuleLoaded(module);
         } else {
             //the same module to register again
             oldModule = runtimeModule.getDefaultModule();
@@ -129,9 +137,11 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             // remove module old version
             if (oldModule != null && module.getModuleConfig().isNeedUnloadOldVersion() && !runtimeModule.getModules().isEmpty()) {
                 runtimeModule.getModules().remove(oldModule.getVersion());
+                //移除旧模块后销毁旧模块
+                onDestroyModule(oldModule);
+                oldModule.destroy();
             }
         }
-
         return oldModule;
     }
 
@@ -141,20 +151,27 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Remove Module: {}", name);
         }
-        return remove(name, getRuntimeModule((String) name).getDefaultVersion());
+        return remove(name, getRuntimeModule(name).getDefaultVersion());
     }
 
     @Override
     public Module remove(String name, String version) {
         checkNotNull(name, "module name is null");
         checkNotNull(version, "module version is null");
-        return getRuntimeModule((String) name).getModules().remove(version);
+        Module module = getRuntimeModule((String) name).getModules().remove(version);
+        if(module != null) {
+        	//移除模块后销毁模块
+        	onDestroyModule(module);
+        	module.destroy();
+        }
+        return module;
     }
 
     @Override
     public void destroy() throws Exception {
         for (Module each : getModules()) {
             try {
+            	onModuleLoaded(each);
                 each.destroy();
             } catch (Exception e) {
                 LOGGER.error("Failed to destroy module: " + each.getName(), e);
@@ -165,15 +182,69 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
 
     @Override
     public Map<String, String> getErrorModuleContext() {
-
         Map<String, String> result = Maps.newHashMap();
-
         for (String name : allModules.keySet()) {
             RuntimeModule runtimeModule = getRuntimeModule((String) name);
             result.put(name, runtimeModule.getErrorContext());
         }
-
         return result;
     }
+    
+    /**
+     * 批量设置模块生命周期监听，方便使用spring注入监听
+     * @param listeners
+     */
+    public void setListeners(List<ModuleListener> listeners) {
+    	if(listeners == null) {
+    		throw new IllegalArgumentException("listeners is must.");
+    	}
+    	for(ModuleListener listener : listeners) {
+    		addListener(listener);
+    	}
+    }
 
+	@Override
+	public void addListener(ModuleListener listener) {
+		if(listeners == null) {
+			synchronized (this) {
+				if(listeners == null) {
+					listeners = new ArrayList<ModuleListener>(5);
+				}
+			}
+		}
+		if(!listeners.contains(listener)) {
+			listeners.add(listener);
+		}
+	}
+
+	@Override
+	public void removeListener(ModuleListener listener) {
+		if(listeners != null) {
+			listeners.remove(listener);
+		}
+	}
+	
+	/**
+	 * 模块加载完成后调用监听
+	 * @param module
+	 */
+	private void onModuleLoaded(Module module) {
+		if(listeners != null) {
+			for(ModuleListener listener : listeners) {
+				listener.onLoaded(module);
+			}
+		}
+	}
+	
+	/**
+	 * 模块销毁前调用监听
+	 * @param module
+	 */
+	private void onDestroyModule(Module module) {
+		if(listeners != null) {
+			for(ModuleListener listener : listeners) {
+				listener.onPreDestroy(module);
+			}
+		}
+	}
 }

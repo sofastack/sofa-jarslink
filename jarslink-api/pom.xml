@@ -14,7 +14,7 @@
     <properties>
         <slf4j.version>1.7.7</slf4j.version>
         <apache.commons.lang.version>2.6</apache.commons.lang.version>
-        <org.springframework.version>4.0.2.RELEASE</org.springframework.version>
+        <org.springframework.version>4.2.0.RELEASE</org.springframework.version>
         <apache.commons.collections.version>3.2.1</apache.commons.collections.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -103,6 +103,17 @@
             <artifactId>spring-test</artifactId>
             <version>${org.springframework.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+        	<groupId>org.springframework</groupId>
+        	<artifactId>spring-webmvc</artifactId>
+        	<version>${org.springframework.version}</version>
+        </dependency>
+        <dependency>
+        	<groupId>javax.servlet</groupId>
+        	<artifactId>javax.servlet-api</artifactId>
+        	<version>3.1.0</version>
+        	<scope>provided</scope>
         </dependency>
     </dependencies>
     <build>
