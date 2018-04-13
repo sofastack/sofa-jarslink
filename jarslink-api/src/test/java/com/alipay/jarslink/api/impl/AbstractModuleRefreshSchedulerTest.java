@@ -92,6 +92,7 @@ public class AbstractModuleRefreshSchedulerTest {
         moduleConfig.setVersion("1.1");
         abstractModuleRefreshSchedulerImpl.setModuleConfigs(ImmutableList.of(moduleConfig));
         abstractModuleRefreshSchedulerImpl.run();
+        moduleManager.activeVersion(moduleConfig.getName(), moduleConfig.getVersion());
         demo = moduleManager.find(moduleConfig.getName());
         Assert.assertEquals(moduleConfig.getVersion(), demo.getVersion());
 
