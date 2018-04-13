@@ -54,7 +54,6 @@ Based on a deep understanding of what was missing in available development frame
 - [1.5.0.20171107](http://ifeve.com/wp-content/uploads/2018/02/jarslink.zip)
 - [For more version](https://oss.sonatype.org/#nexus-search;quick~com.alipay.jarslink)
 
-
 # License
 
 JarsLink is released under the [Apache 2.0 license](https://github.com/alibaba/jarslink/blob/master/LICENSE).

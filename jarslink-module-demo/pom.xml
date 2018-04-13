@@ -18,6 +18,7 @@
         <apache.commons.collections.version>3.2.1</apache.commons.collections.version>
         <joda.time.version>2.3</joda.time.version>
         <jackson.version>2.4.1</jackson.version>
+        <org.springframework.version>4.2.0.RELEASE</org.springframework.version>
     </properties>
 
     <dependencies>
@@ -52,12 +53,18 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
-            <version>3.0.5.RELEASE</version>
+           <version>${org.springframework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>3.0.5.RELEASE</version>
+           <version>${org.springframework.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+           <version>${org.springframework.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
