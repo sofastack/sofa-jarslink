@@ -225,5 +225,8 @@ public class SpringModule implements Module {
     public ClassLoader getChildClassLoader() {
         return this.applicationContext.getClassLoader();
     }
-
+    
+    public ApplicationContext getApplicationContext() {
+    	return applicationContext;
+    }
 }

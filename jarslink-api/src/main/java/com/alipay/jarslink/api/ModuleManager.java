@@ -92,12 +92,22 @@ public interface ModuleManager {
      */
     Module remove(String name, String version);
 
-
     /**
      * 获取加载失败的模块异常信息
      *
      * @return key:模块名,value:错误信息
      */
     Map<String, String> getErrorModuleContext();
-
+    
+    /**
+     * 添加模块生命周期监听
+     * @param listener
+     */
+    void addListener(ModuleListener listener);
+	
+    /**
+     * 移除模块生命周期监听
+     * @param listener
+     */
+	void removeListener(ModuleListener listener);
 }
