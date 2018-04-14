@@ -1,3 +1,6 @@
+# 1.7.0.20180401
+- add Support inter module calls
+
 # 1.6.1.20180301
 
 - Add support for spring annotation load bean([#32](https://github.com/alibaba/jarslink/issues/32)). Thanks to [@JoeKerouac](https://github.com/JoeKerouac)!
