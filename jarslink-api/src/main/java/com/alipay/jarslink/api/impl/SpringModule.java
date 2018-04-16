@@ -101,7 +101,6 @@ public class SpringModule implements Module {
                 }
             }
         });
-        actions.clear();
     }
 
     /**
@@ -220,6 +219,7 @@ public class SpringModule implements Module {
                 ((ActionProxy) action).destroy();
             }
         }
+        actions.clear();
     }
 
     /**
