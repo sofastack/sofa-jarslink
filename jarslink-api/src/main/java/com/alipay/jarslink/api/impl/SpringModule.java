@@ -30,12 +30,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.CachedIntrospectionResults;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import sun.misc.ClassLoaderUtil;
 
 import java.beans.Introspector;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.net.URLClassLoader;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -51,37 +50,53 @@ public class SpringModule implements Module {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringModule.class);
 
-    /**  模块的配置信息 */
+    /**
+     * 模块的配置信息
+     */
     ModuleConfig moduleConfig;
 
-    /**  模块的名称 */
+    /**
+     * 模块的名称
+     */
     private final String name;
 
-    /**  模块的版本 */
+    /**
+     * 模块的版本
+     */
     private final String version;
 
-    /**  模块启动的时间 */
+    /**
+     * 模块启动的时间
+     */
     private final Date creation;
 
-    /**  模块中的Action，Key为大写Action名称 */
+    /**
+     * 模块中的Action，Key为大写Action名称
+     */
     private final Map<String, Action> actions;
 
     private final ConfigurableApplicationContext applicationContext;
 
-    public SpringModule(ModuleConfig moduleConfig, String version, String name,
-                        ConfigurableApplicationContext applicationContext) {
+    public SpringModule(ModuleConfig moduleConfig, String version, String name, ConfigurableApplicationContext
+            applicationContext) {
         this.moduleConfig = moduleConfig;
         this.applicationContext = applicationContext;
         this.version = version;
         this.name = name;
         this.creation = new Date();
-        this.actions = scanActions(applicationContext, Action.class,
-                new Function<Action, String>() {
-                    @Override
-                    public String apply(Action input) {
-                        return input.getActionName();
-                    }
-                });
+        Map<String, Action> actions = scanActions(applicationContext, Action.class, new Function<Action, String>() {
+            @Override
+            public String apply(Action input) {
+                return input.getActionName();
+            }
+        });
+        //转换为代理action
+        this.actions = Maps.transformValues(actions, new Function<Action, Action>() {
+            @Override
+            public Action apply(Action input) {
+                return new ActionProxy(input);
+            }
+        });
     }
 
     /**
@@ -93,18 +108,18 @@ public class SpringModule implements Module {
      * @param <T>
      * @return
      */
-    private <T> Map<String, T> scanActions(ApplicationContext applicationContext, Class<T> type,
-                                           Function<T, String> keyFunction) {
+    private <T> Map<String, T> scanActions(ApplicationContext applicationContext, Class<T> type, Function<T, String>
+            keyFunction) {
         Map<String, T> actions = Maps.newHashMap();
         //find Action in module
-        for (T action : applicationContext.getBeansOfType(type).values()) {
+        Collection<T> actionCollection = applicationContext.getBeansOfType(type).values();
+        for (T action : actionCollection) {
             String actionName = keyFunction.apply(action);
             if (isBlank(actionName)) {
                 throw new ModuleRuntimeException("JarsLink scanActions actionName is null");
             }
             String key = actionName.toUpperCase(Locale.CHINESE);
-            checkState(!actions.containsKey(key), "Duplicated action %s found by: %s",
-                    type.getSimpleName(), key);
+            checkState(!actions.containsKey(key), "Duplicated action %s found by: %s", type.getSimpleName(), key);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("JarsLink Scan action: {}: bean: {}", key, action);
             }
@@ -179,13 +194,28 @@ public class SpringModule implements Module {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Close application context: {}", applicationContext);
         }
-        if (!actions.isEmpty()) {
-            actions.clear();
-        }
+        //destroy action
+        clearAction();
         //close spring context
         closeQuietly(applicationContext);
         //clean classloader
         clear(applicationContext.getClassLoader());
+    }
+
+    /**
+     * 销毁Action（如果不销毁Action对象，那么ClassLoader加载的该Action的Class就不会销毁，而Module有getAction方法有可能
+     * 将Action的引用泄露，所以加一层代理来达到销毁Action对象的目的进而在ClassLoader卸载后能够正确的将Class卸载）
+     */
+    private void clearAction() {
+        if (actions.isEmpty()) {
+            return;
+        }
+        for (Action action : actions.values()) {
+            if (action instanceof ActionProxy) {
+                ((ActionProxy) action).destroy();
+            }
+        }
+        actions.clear();
     }
 
     /**
@@ -201,10 +231,14 @@ public class SpringModule implements Module {
         //Clear the introspection cache for the given ClassLoader
         CachedIntrospectionResults.clearClassLoader(classLoader);
         LogFactory.release(classLoader);
+        if (classLoader instanceof URLClassLoader) {
+            ClassLoaderUtil.releaseLoader((URLClassLoader) classLoader);
+        }
     }
 
     /**
      * 关闭Spring上下文
+     *
      * @param applicationContext
      */
     private static void closeQuietly(ConfigurableApplicationContext applicationContext) {
