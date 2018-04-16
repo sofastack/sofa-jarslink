@@ -18,6 +18,8 @@
 package com.alipay.jarslink.api.impl;
 
 import com.alipay.jarslink.api.Module;
+import com.alipay.jarslink.api.ModuleListener;
+import com.alipay.jarslink.api.ModuleListenerDispatcher;
 import com.alipay.jarslink.api.ModuleLoader;
 import com.alipay.jarslink.api.ModuleManager;
 import com.alipay.jarslink.api.ModuleRuntimeException;
@@ -96,6 +98,45 @@ public class ModuleManagerTest {
         Assert.assertEquals(1, moduleManager.getModules().size());
     }
 
+    @Test
+    public void shouldSetModuleListenerDispatcher() {
+    	ModuleListenerDispatcher dispatcher = new ModuleListenerDispatcher();
+    	final ListenerContext context = new ListenerContext();
+    	ModuleListener listener = new ModuleListener() {
+			@Override
+			public void onRegistered(Module module) {
+				context.hasInvokeRegistered = true;
+			}
+			
+			@Override
+			public void onPreDestroy(Module module) {
+				context.hasInvokePreDestroy = true;
+			}
+			
+			@Override
+			public void onLoaded(Module module) {
+				context.hasInvokeLoaded = true;
+			}
+			
+			@Override
+			public void onDeregistered(Module module) {
+				context.hasInvokeDeregistered = true;
+			}
+		};
+		dispatcher.addModuleListener(listener);
+		moduleManager.setModuleListenerDispatcher(dispatcher);
+		moduleLoader.setModuleListenerDispatcher(dispatcher);
+		 //注册一个模块
+        Module module = loadModule();
+        moduleManager.register(module);
+        moduleManager.remove(module.getName());
+        moduleLoader.unload(module);
+    	Assert.assertTrue(context.hasInvokeLoaded);
+    	Assert.assertTrue(context.hasInvokeRegistered);
+    	Assert.assertTrue(context.hasInvokeDeregistered);
+    	Assert.assertTrue(context.hasInvokePreDestroy);
+    }
+    
     private Module loadModule() {
         return moduleLoader.load(buildModuleConfig(true));
     }
@@ -112,4 +153,10 @@ public class ModuleManagerTest {
         return moduleLoader.load(buildModuleConfig(name, version, true));
     }
 
+    class ListenerContext {
+    	boolean hasInvokeLoaded = false;
+    	boolean hasInvokeRegistered = false;
+    	boolean hasInvokeDeregistered = false;
+    	boolean hasInvokePreDestroy = false;
+    }
 }

@@ -18,6 +18,7 @@
 package com.alipay.jarslink.api.impl;
 
 import com.alipay.jarslink.api.Module;
+import com.alipay.jarslink.api.ModuleListenerDispatcher;
 import com.alipay.jarslink.api.ModuleManager;
 import com.alipay.jarslink.api.ModuleRuntimeException;
 import com.google.common.collect.ImmutableList;
@@ -48,7 +49,9 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
     /**
      * 已注册的所有模块,key:moduleName upperCase
      */
-    private final Map<String, RuntimeModule> allModules = new ConcurrentHashMap();
+    private final Map<String, RuntimeModule> allModules = new ConcurrentHashMap<String, RuntimeModule>();
+    
+    private ModuleListenerDispatcher listenerDispatcher;
 
     private RuntimeModule getRuntimeModule(String name) {
         RuntimeModule runtimeModule = allModules.get(name.toUpperCase());
@@ -119,13 +122,16 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         if (runtimeModule.getModules().isEmpty()) {
             runtimeModule = new RuntimeModule().withName(name).withDefaultVersion(version).addModule(module);
             allModules.put(name.toUpperCase(), runtimeModule);
+            onRegistered(module);
         } else {
             //the same module to register again
             oldModule = runtimeModule.getDefaultModule();
             runtimeModule.addModule(module).setDefaultVersion(version);
+            onRegistered(module);
             // remove module old version
             if (oldModule != null && module.getModuleConfig().isNeedUnloadOldVersion()) {
                 runtimeModule.getModules().remove(oldModule.getVersion());
+                onDeregistered(oldModule);
             }
         }
         return oldModule;
@@ -145,7 +151,9 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
     public Module remove(String name, String version) {
         checkNotNull(name, "module name is null");
         checkNotNull(version, "module version is null");
-        return getRuntimeModule(name).getModules().remove(version);
+        Module module = getRuntimeModule(name).getModules().remove(version);
+        onDeregistered(module);
+        return module;
     }
 
     @Override
@@ -157,7 +165,6 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
                 LOGGER.error("Failed to destroy module: " + each.getName(), e);
             }
         }
-
         allModules.clear();
     }
 
@@ -186,4 +193,29 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             throw new ModuleRuntimeException("duplicate module :[" + name + ":" + version + "]");
         }
     }
+    
+    /**
+     * 模块注册完成后调用
+     * @param module
+     */
+    private void onRegistered(Module module) {
+    	 if(listenerDispatcher != null) {
+         	listenerDispatcher.onRegistered(module);
+         }
+    }
+    
+    /**
+     * 模块移除注册后调用
+     * @param module
+     */
+    private void onDeregistered(Module module) {
+    	 if(listenerDispatcher != null && module != null) {
+         	listenerDispatcher.onDeregistered(module);
+         }
+    }
+    
+	@Override
+	public void setModuleListenerDispatcher(ModuleListenerDispatcher dispatcher) {
+		this.listenerDispatcher = dispatcher;
+	}
 }

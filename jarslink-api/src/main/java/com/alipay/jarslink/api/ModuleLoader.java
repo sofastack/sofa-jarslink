@@ -95,4 +95,10 @@ public interface ModuleLoader {
      * @param postProcessor 要移除的后处理器
      */
     void unRegisterPostProcessor(ModulePostProcessor postProcessor);
+    
+    /**
+     * 设置模块生命周期监听调度器
+     * @param dispatcher
+     */
+    void setModuleListenerDispatcher(ModuleListenerDispatcher dispatcher);
 }

@@ -226,4 +226,7 @@ public class SpringModule implements Module {
         return this.applicationContext.getClassLoader();
     }
 
+    public ApplicationContext getApplicationContext() {
+    	return this.applicationContext;
+    }
 }
