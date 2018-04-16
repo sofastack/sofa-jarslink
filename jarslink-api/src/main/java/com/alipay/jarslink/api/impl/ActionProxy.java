@@ -10,7 +10,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author joe
  * @version 2018.04.16 22:33
  */
-public class ActionProxy<R, T> implements Action<R, T> {
+class ActionProxy<R, T> implements Action<R, T> {
     private Action<R, T> action;
 
     /**

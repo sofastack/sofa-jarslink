@@ -94,11 +94,7 @@ public class SpringModule implements Module {
         this.actions = Maps.transformValues(actions, new Function<Action, Action>() {
             @Override
             public Action apply(Action input) {
-                if (!(input instanceof ActionProxy)) {
-                    return new ActionProxy(input);
-                } else {
-                    return input;
-                }
+                return new ActionProxy(input);
             }
         });
     }
