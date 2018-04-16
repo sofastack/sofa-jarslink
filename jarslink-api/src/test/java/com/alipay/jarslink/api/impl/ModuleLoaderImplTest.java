@@ -91,6 +91,7 @@ public class ModuleLoaderImplTest {
         //4.2:查找和执行Action
         Action<ModuleConfig, ModuleConfig> action = module.getAction(actionName);
         Assert.assertNotNull(action);
+        Assert.assertEquals(actionName , action.getActionName());
         result = action.execute(moduleConfig);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getName(), moduleConfig.getName());
