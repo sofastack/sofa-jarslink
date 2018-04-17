@@ -101,28 +101,8 @@ public class ModuleManagerTest {
     @Test
     public void shouldSetModuleListenerDispatcher() {
     	ModuleListenerDispatcher dispatcher = new ModuleListenerDispatcher();
-    	final ListenerContext context = new ListenerContext();
-    	ModuleListener listener = new ModuleListener() {
-			@Override
-			public void onRegistered(Module module) {
-				context.hasInvokeRegistered = true;
-			}
-			
-			@Override
-			public void onPreDestroy(Module module) {
-				context.hasInvokePreDestroy = true;
-			}
-			
-			@Override
-			public void onLoaded(Module module) {
-				context.hasInvokeLoaded = true;
-			}
-			
-			@Override
-			public void onDeregistered(Module module) {
-				context.hasInvokeDeregistered = true;
-			}
-		};
+    	ListenerContext context = new ListenerContext();
+    	ModuleListener listener = new ModuleListenerImpl(context);
 		dispatcher.addModuleListener(listener);
 		moduleManager.setModuleListenerDispatcher(dispatcher);
 		moduleLoader.setModuleListenerDispatcher(dispatcher);
@@ -131,10 +111,10 @@ public class ModuleManagerTest {
         moduleManager.register(module);
         moduleManager.remove(module.getName());
         moduleLoader.unload(module);
-    	Assert.assertTrue(context.hasInvokeLoaded);
-    	Assert.assertTrue(context.hasInvokeRegistered);
-    	Assert.assertTrue(context.hasInvokeDeregistered);
-    	Assert.assertTrue(context.hasInvokePreDestroy);
+    	Assert.assertTrue(context.isInvokeLoaded());
+    	Assert.assertTrue(context.isInvokeRegistered());
+    	Assert.assertTrue(context.isInvokeDeregistered());
+    	Assert.assertTrue(context.isInvokePreDestroy());
     }
     
     private Module loadModule() {
@@ -151,12 +131,5 @@ public class ModuleManagerTest {
 
     private Module loadModule(String name, String version) {
         return moduleLoader.load(buildModuleConfig(name, version, true));
-    }
-
-    class ListenerContext {
-    	boolean hasInvokeLoaded = false;
-    	boolean hasInvokeRegistered = false;
-    	boolean hasInvokeDeregistered = false;
-    	boolean hasInvokePreDestroy = false;
     }
 }
