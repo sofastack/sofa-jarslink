@@ -18,6 +18,8 @@
 package com.alipay.jarslink.api.impl;
 
 import com.alipay.jarslink.api.Module;
+import com.alipay.jarslink.api.ModuleListener;
+import com.alipay.jarslink.api.ModuleListenerDispatcher;
 import com.alipay.jarslink.api.ModuleLoader;
 import com.alipay.jarslink.api.ModuleManager;
 import com.alipay.jarslink.api.ModuleRuntimeException;
@@ -42,13 +44,18 @@ import static com.alipay.jarslink.api.impl.ModuleLoaderImplTest.buildModuleConfi
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath*:META-INF/spring/jarslink.xml"})
-public class ModuleManagerTest {
+public class ModuleManagerTest implements ModuleListener {
 
     @Autowired
     private ModuleManager moduleManager;
 
     @Autowired
     private ModuleLoader moduleLoader;
+    
+    private boolean invokeLoaded = false;
+	private boolean invokeRegistered = false;
+	private boolean invokeDeregistered = false;
+	private boolean invokePreDestroy = false;
 
     @Test
     public void shouldRegisterModule() throws MalformedURLException {
@@ -96,6 +103,23 @@ public class ModuleManagerTest {
         Assert.assertEquals(1, moduleManager.getModules().size());
     }
 
+    @Test
+    public void shouldSetModuleListenerDispatcher() {
+    	ModuleListenerDispatcher dispatcher = new ModuleListenerDispatcher();
+		dispatcher.addModuleListener(this);
+		moduleManager.setModuleListenerDispatcher(dispatcher);
+		moduleLoader.setModuleListenerDispatcher(dispatcher);
+		 //注册一个模块
+        Module module = loadModule();
+        moduleManager.register(module);
+        moduleManager.remove(module.getName());
+        moduleLoader.unload(module);
+    	Assert.assertTrue(invokeLoaded);
+    	Assert.assertTrue(invokeRegistered);
+    	Assert.assertTrue(invokeDeregistered);
+    	Assert.assertTrue(invokePreDestroy);
+    }
+    
     private Module loadModule() {
         return moduleLoader.load(buildModuleConfig(true));
     }
@@ -111,5 +135,23 @@ public class ModuleManagerTest {
     private Module loadModule(String name, String version) {
         return moduleLoader.load(buildModuleConfig(name, version, true));
     }
-
+    @Override
+	public void onRegistered(Module module) {
+		invokeRegistered = true;
+	}
+	
+	@Override
+	public void onPreDestroy(Module module) {
+		invokePreDestroy = true;
+	}
+	
+	@Override
+	public void onLoaded(Module module) {
+		invokeLoaded = true;
+	}
+	
+	@Override
+	public void onDeregistered(Module module) {
+		invokeDeregistered = true;
+	}
 }

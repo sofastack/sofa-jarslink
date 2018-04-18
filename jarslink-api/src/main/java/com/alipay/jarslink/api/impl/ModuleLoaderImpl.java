@@ -88,6 +88,8 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
     private final List<ApplicationContextPostProcessor> applicationContextPostProcessors = new
             CopyOnWriteArrayList<ApplicationContextPostProcessor>();
     private final List<ModulePostProcessor> modulePostProcessors = new CopyOnWriteArrayList<ModulePostProcessor>();
+    
+    private ModuleListenerDispatcher listenerDispatcher;
 
     @Override
     public Module load(ModuleConfig moduleConfig) {
@@ -109,12 +111,14 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
         Module module = new SpringModule(moduleConfig, moduleConfig.getVersion(), moduleConfig.getName(),
                 moduleApplicationContext);
         doModulePostProcessor(module, moduleConfig);
+        onLoaded(module);
         return module;
     }
 
     @Override
     public void unload(Module module) {
         if (module != null) {
+        	onPreDestroy(module);
             module.destroy();
         }
     }
@@ -390,4 +394,20 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
+    private void onLoaded(Module module) {
+    	if(listenerDispatcher != null) {
+    		listenerDispatcher.onLoaded(module);
+    	}
+    }
+    
+    private void onPreDestroy(Module module) {
+    	if(listenerDispatcher != null) {
+    		listenerDispatcher.onPreDestroy(module);
+    	}
+    }
+    
+	@Override
+	public void setModuleListenerDispatcher(ModuleListenerDispatcher dispatcher) {
+		this.listenerDispatcher = dispatcher;
+	}
 }

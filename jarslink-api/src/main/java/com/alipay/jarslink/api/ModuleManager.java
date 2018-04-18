@@ -103,4 +103,9 @@ public interface ModuleManager {
      */
     Map<String, String> getErrorModuleContext();
 
+    /**
+     * 设置模块生命周期监听调度器
+     * @param dispatcher
+     */
+    void setModuleListenerDispatcher(ModuleListenerDispatcher dispatcher);
 }
