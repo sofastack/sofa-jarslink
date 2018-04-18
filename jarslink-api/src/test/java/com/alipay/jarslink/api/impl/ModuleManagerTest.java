@@ -44,13 +44,18 @@ import static com.alipay.jarslink.api.impl.ModuleLoaderImplTest.buildModuleConfi
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath*:META-INF/spring/jarslink.xml"})
-public class ModuleManagerTest {
+public class ModuleManagerTest implements ModuleListener {
 
     @Autowired
     private ModuleManager moduleManager;
 
     @Autowired
     private ModuleLoader moduleLoader;
+    
+    private boolean invokeLoaded = false;
+	private boolean invokeRegistered = false;
+	private boolean invokeDeregistered = false;
+	private boolean invokePreDestroy = false;
 
     @Test
     public void shouldRegisterModule() throws MalformedURLException {
@@ -101,9 +106,7 @@ public class ModuleManagerTest {
     @Test
     public void shouldSetModuleListenerDispatcher() {
     	ModuleListenerDispatcher dispatcher = new ModuleListenerDispatcher();
-    	ListenerContext context = new ListenerContext();
-    	ModuleListener listener = new ModuleListenerImpl(context);
-		dispatcher.addModuleListener(listener);
+		dispatcher.addModuleListener(this);
 		moduleManager.setModuleListenerDispatcher(dispatcher);
 		moduleLoader.setModuleListenerDispatcher(dispatcher);
 		 //注册一个模块
@@ -111,10 +114,10 @@ public class ModuleManagerTest {
         moduleManager.register(module);
         moduleManager.remove(module.getName());
         moduleLoader.unload(module);
-    	Assert.assertTrue(context.isInvokeLoaded());
-    	Assert.assertTrue(context.isInvokeRegistered());
-    	Assert.assertTrue(context.isInvokeDeregistered());
-    	Assert.assertTrue(context.isInvokePreDestroy());
+    	Assert.assertTrue(invokeLoaded);
+    	Assert.assertTrue(invokeRegistered);
+    	Assert.assertTrue(invokeDeregistered);
+    	Assert.assertTrue(invokePreDestroy);
     }
     
     private Module loadModule() {
@@ -132,4 +135,23 @@ public class ModuleManagerTest {
     private Module loadModule(String name, String version) {
         return moduleLoader.load(buildModuleConfig(name, version, true));
     }
+    @Override
+	public void onRegistered(Module module) {
+		invokeRegistered = true;
+	}
+	
+	@Override
+	public void onPreDestroy(Module module) {
+		invokePreDestroy = true;
+	}
+	
+	@Override
+	public void onLoaded(Module module) {
+		invokeLoaded = true;
+	}
+	
+	@Override
+	public void onDeregistered(Module module) {
+		invokeDeregistered = true;
+	}
 }

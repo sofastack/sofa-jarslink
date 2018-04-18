@@ -120,14 +120,14 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         Module oldModule = null;
         //module frist register
         if (runtimeModule.getModules().isEmpty()) {
+        	onRegistered(module);
             runtimeModule = new RuntimeModule().withName(name).withDefaultVersion(version).addModule(module);
             allModules.put(name.toUpperCase(), runtimeModule);
-            onRegistered(module);
         } else {
             //the same module to register again
             oldModule = runtimeModule.getDefaultModule();
-            runtimeModule.addModule(module).setDefaultVersion(version);
             onRegistered(module);
+            runtimeModule.addModule(module).setDefaultVersion(version);
             // remove module old version
             if (oldModule != null && module.getModuleConfig().isNeedUnloadOldVersion()) {
                 runtimeModule.getModules().remove(oldModule.getVersion());
