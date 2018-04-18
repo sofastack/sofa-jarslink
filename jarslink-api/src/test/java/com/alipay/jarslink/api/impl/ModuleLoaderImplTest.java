@@ -4,10 +4,7 @@
  */
 package com.alipay.jarslink.api.impl;
 
-import com.alipay.jarslink.api.Action;
-import com.alipay.jarslink.api.Module;
-import com.alipay.jarslink.api.ModuleConfig;
-import com.alipay.jarslink.api.ModuleLoader;
+import com.alipay.jarslink.api.*;
 import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,11 +41,20 @@ public class ModuleLoaderImplTest {
         Assert.assertNotNull(module);
         Assert.assertNotNull(module.getCreation());
         Assert.assertNotNull(module.getChildClassLoader());
+        ModuleConfig moduleConfig = module.getModuleConfig();
         //卸载模块
         moduleLoader.unload(module);
 
         Assert.assertTrue(module.getActions().isEmpty());
         Assert.assertNotNull(module.getChildClassLoader());
+        moduleConfig.addScanPackage("com.alipay.jarslink.error");
+        ModuleRuntimeException exception = null;
+        try {
+            moduleLoader.load(moduleConfig);
+        } catch (ModuleRuntimeException e) {
+            exception = e;
+        }
+        Assert.assertNotNull(exception);
     }
 
     @Test
@@ -85,6 +91,7 @@ public class ModuleLoaderImplTest {
         //4.2:查找和执行Action
         Action<ModuleConfig, ModuleConfig> action = module.getAction(actionName);
         Assert.assertNotNull(action);
+        Assert.assertEquals(actionName , action.getActionName());
         result = action.execute(moduleConfig);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getName(), moduleConfig.getName());
