@@ -42,13 +42,13 @@
 		<dependency>
 			<groupId>com.alipay.jarslink</groupId>
 			<artifactId>jarslink-api</artifactId>
-			<version>1.5.0.20180213</version>
+			<version>1.5.0.20180217</version>
 		</dependency>
-		<dependency>
+		<!--<dependency>
 			<groupId>com.alipay.jarslink</groupId>
 			<artifactId>jarslink-module-demo</artifactId>
 			<version>1.0.0</version>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>

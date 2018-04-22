@@ -13,21 +13,29 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BeanConfig {
 
-
+    /**
+     * 生成模块加载器
+      */
     @Bean(name="moduleLoader")
     public ModuleLoaderImpl generateLoaderImpl() {
         ModuleLoaderImpl loaderImpl = new ModuleLoaderImpl();
         return loaderImpl;
     }
 
-
+    /**
+     * 生成模块管理器
+     * @return
+     */
     @Bean(name="moduleManager")
     public ModuleManagerImpl generateManagerImpl() {
         ModuleManagerImpl managerImpl = new ModuleManagerImpl();
         return managerImpl;
     }
 
-
+    /**
+     * 生成模块调度器
+     * @return
+     */
     @Bean(name="moduleRefreshScheduler")
     public ModuleRefreshSchedulerImpl generateSchedulerImpl() {
         ModuleRefreshSchedulerImpl schedulerImpl = new ModuleRefreshSchedulerImpl();
