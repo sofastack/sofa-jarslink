@@ -17,14 +17,14 @@
  */
 package com.alipay.jarslink.api.impl;
 
-import com.alipay.jarslink.api.ModuleManager;
 import com.alipay.jarslink.api.Module;
 import com.alipay.jarslink.api.ModuleConfig;
 import com.alipay.jarslink.api.ModuleLoader;
+import com.alipay.jarslink.api.ModuleManager;
 import com.alipay.jarslink.api.ModuleService;
 import com.google.common.base.Preconditions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.alipay.jarslink.api.impl.ModuleUtil.destroyQuietly;
 
 /**
  * 模块服务默认实现
@@ -34,11 +34,9 @@ import org.slf4j.LoggerFactory;
  */
 public class ModuleServiceImpl implements ModuleService {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(ModuleServiceImpl.class);
-
     private ModuleManager moduleManager;
-    private ModuleLoader  moduleLoader;
+
+    private ModuleLoader moduleLoader;
 
     @Override
     public Module loadAndRegister(ModuleConfig moduleConfig) {
@@ -60,19 +58,6 @@ public class ModuleServiceImpl implements ModuleService {
         Module removed = moduleManager.remove(moduleName);
         destroyQuietly(removed);
         return removed;
-    }
-
-    private static void destroyQuietly(Module module) {
-        if (module != null) {
-            try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Destroy module: {}", module.getName());
-                }
-                module.destroy();
-            } catch (Exception e) {
-                LOGGER.error("Failed to destroy module " + module, e);
-            }
-        }
     }
 
     public void setModuleManager(ModuleManager moduleManager) {

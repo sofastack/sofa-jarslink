@@ -22,25 +22,23 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- *
  * 模块配置信息
  *
  * @author tengfei.fangtf
  * @version $Id: ModuleConfig.java, v 0.1 Mar 23, 2017 13:02:13 PM tengfei.fangtf Exp $
  */
-public class ModuleConfig {
-
-    /**
-     * 默认的ToStringStyle
-     */
-    public static final transient ToStringStyle DEFAULT_TO_STRING_STYLE = new DefaultToStringStyle();
+public class ModuleConfig extends ToStringObject {
 
     /**
      * 模块名,建议用英文命名,忽略大小写
@@ -58,6 +56,15 @@ public class ModuleConfig {
     private Boolean enabled = true;
 
     /**
+     * spring扫描注解的包，当该set不为空时启动包扫描，将自动扫描注解形式的bean
+     * <p>
+     * <strong>当xml中和注解同时定义了一个相同名字的bean将会以xml中的为主，也就是注解定义的bean会被xml定义的bean 覆盖</strong>
+     * <p>
+     * <strong>xml中的bean不能依赖注解bean，注解bean可以依赖xml定义的bean</strong>
+     */
+    private Set<String> scanPackages = new CopyOnWriteArraySet<>();
+
+    /**
      * 模块的版本，如1.0.0.20120609 版本变化会触发模块重新部署
      */
     private String version;
@@ -69,6 +76,8 @@ public class ModuleConfig {
 
     /**
      * 模块指定需要覆盖的Class的包名,不遵循双亲委派, 模块的类加载器加载这些包
+     * <p>
+     * 如果子模块中加载不到那么仍然会到父容器中加载
      */
     private List<String> overridePackages = Lists.newArrayList();
 
@@ -77,15 +86,23 @@ public class ModuleConfig {
      */
     private List<URL> moduleUrl = Lists.newArrayList();
 
+    private boolean isNeedUnloadOldVersion = true;
+
+    public boolean isNeedUnloadOldVersion() {
+        return isNeedUnloadOldVersion;
+    }
+
+    public void setNeedUnloadOldVersion(boolean needUnloadOldVersion) {
+        isNeedUnloadOldVersion = needUnloadOldVersion;
+    }
+
     public List<URL> getModuleUrl() {
         return moduleUrl;
     }
 
     public List<String> getModuleUrlPath() {
         List<String> moduleUrls = Lists.newArrayList();
-        for (URL url : moduleUrl) {
-            moduleUrls.add(url.toString());
-        }
+        moduleUrls.addAll(moduleUrl.stream().map(URL::toString).collect(Collectors.toList()));
         return moduleUrls;
     }
 
@@ -122,6 +139,38 @@ public class ModuleConfig {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * 添加spring scan-base-package配置
+     *
+     * @param packageName 要添加的spring scan-base-package配置
+     */
+    public ModuleConfig addScanPackage(String packageName) {
+        checkNotNull(packageName, "packageName must not be null");
+        scanPackages.add(packageName);
+        return this;
+    }
+
+    /**
+     * 移除指定现有的spring scan-base-package
+     *
+     * @param packageName 要移除的之前配置的spring scan-base-package
+     */
+    public ModuleConfig removeScanPackage(String packageName) {
+        //不验证空字符串
+        checkNotNull(packageName, "packageName must not be null");
+        scanPackages.remove(packageName);
+        return this;
+    }
+
+    /**
+     * 获取spring scan-base-package集合
+     *
+     * @return spring scan-base-package的集合
+     */
+    public Set<String> getScanPackages() {
+        return scanPackages;
     }
 
     public ModuleConfig withEnabled(Boolean enabled) {
@@ -176,31 +225,18 @@ public class ModuleConfig {
         this.overridePackages = overridePackages;
     }
 
-    /**
-     * 默认的ToStringStyle
-     */
-    public static class DefaultToStringStyle extends ToStringStyle {
-
-        private static final long serialVersionUID = 1L;
-
-        public DefaultToStringStyle() {
-            setUseShortClassName(true);
-            setUseIdentityHashCode(false);
-        }
-
-        @Override
-        public void append(StringBuffer buffer, String fieldName, Object value, Boolean fullDetail) {
-            if (value != null) {
-                super.append(buffer, fieldName, value, fullDetail);
-            }
-        }
-
-        @Override
-        public void append(StringBuffer buffer, String fieldName, Object[] array, Boolean fullDetail) {
-            if (array != null && array.length > 0) {
-                super.append(buffer, fieldName, array, fullDetail);
-            }
-        }
+    public ModuleConfig withName(String name) {
+        setName(name);
+        return this;
     }
 
+    public ModuleConfig addModuleUrl(URL url) {
+        moduleUrl.add(url);
+        return this;
+    }
+
+    public ModuleConfig withNeedUnloadOldVersion(boolean needUnloadOldVersion) {
+        setNeedUnloadOldVersion(needUnloadOldVersion);
+        return this;
+    }
 }
