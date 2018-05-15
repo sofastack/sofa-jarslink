@@ -1,0 +1,92 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+skinparam handwritten true
+
+skinparam sequence {
+	ArrowColor DeepSkyBlue
+	ActorBorderColor DeepSkyBlue
+	LifeLineBorderColor blue
+	LifeLineBackgroundColor #A9DCDF
+
+	ParticipantBorderColor DeepSkyBlue
+	ParticipantBackgroundColor DodgerBlue
+	ParticipantFontName Impact
+	ParticipantFontSize 17
+	ParticipantFontColor #A9DCDF
+
+	ActorBackgroundColor aqua
+	ActorFontColor DeepSkyBlue
+	ActorFontSize 17
+	ActorFontName Aapex
+}
+
+participant "AbstractModuleRefreshScheduler" as scheduler
+participant "ModuleLoaderImpl" as loader
+participant "ModuleManagerImpl" as moduleManager
+participant "SpringModule" as module
+participant "ConfigurableApplicationContext" as context
+
+ -> scheduler: 1.定时调度触发
+activate scheduler
+
+scheduler -> scheduler: 2.执行refreshModuleConfigs(),刷新模块配置
+note left
+1.查找状态为ENABLED的ModuleConfig
+2.提取当前配置中的Module名称和对应版本
+3.提取当前内存正在运行模块集合中的Module名称和对应版本
+4.对比找出配置和内存运行模块配置不同的模块名称和对应版本
+5.对新增的模块进行加载
+6.对版本有更新的模块进行加载
+7.移除多余模块
+end note
+scheduler -> scheduler:3.执行putModules()方法,配置新增或者变更的模块
+activate scheduler
+scheduler -> loader: 4.调用moduleLoader.load()，加载模块
+activate scheduler
+activate loader
+loader -> loader: 5.执行loadModuleApplication()方法,加载模块上下文配置
+note left
+1.获取当前线程ClassLoader
+2.创建JarsLink自定义的ModuleClassLoader
+3.将当前线程上下文类加载器设置成自定义的ModuleClassLoader
+4.配置ModuleApplicationContext信息
+5.还原当前线程的ClassLoader
+
+end note
+loader --> scheduler:6.返回加载完成的Module对象
+deactivate loader
+scheduler -> moduleManager:7.调用moduleManager.register()方法,注册新模块
+activate moduleManager
+moduleManager ->moduleManager:8.把新模块以(模块名:模块对象)放入运行时Module集合存储
+activate moduleManager
+moduleManager -->scheduler:9.返回module对象
+deactivate moduleManager
+deactivate moduleManager
+deactivate scheduler
+scheduler -> scheduler:10.执行destroyQuietly()方法，开始销毁旧模块
+activate scheduler
+scheduler->module:11.调用module.destroy()方法销毁模块
+deactivate scheduler
+activate module
+module -> module:12.执行closeQuietly()方法
+activate module
+module -> context:13.调用applicationContext.close()方法，关闭spring上下文
+deactivate module
+activate context
+context-->module:14.响应请求
+deactivate context
+activate module
+module -> module:15.执行clear()方法,清理类加载器
+module -->scheduler:16.响应请求
+deactivate module
+activate scheduler
+scheduler-> scheduler:17.执行removeModules()方法，移除并卸载模块
+activate scheduler
+scheduler->moduleManager:18.调用moduleManager.remove()方法，移除并卸载模块
+deactivate scheduler
+activate moduleManager
+moduleManager->moduleManager:19.执行modules.remove()方法,将当前模块从运行时模块集合modules移除
+activate moduleManager
+moduleManager --> scheduler:20.响应请求
+deactivate moduleManager
+@enduml
