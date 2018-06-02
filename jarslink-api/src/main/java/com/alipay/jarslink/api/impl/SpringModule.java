@@ -23,7 +23,7 @@ import com.alipay.jarslink.api.ModuleConfig;
 import com.alipay.jarslink.api.ModuleRuntimeException;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -259,9 +259,9 @@ public class SpringModule implements Module {
     public ClassLoader getChildClassLoader() {
         return this.applicationContext.getClassLoader();
     }
-  
+
     public ApplicationContext getApplicationContext() {
-    	return this.applicationContext;
+        return this.applicationContext;
     }
 
 }

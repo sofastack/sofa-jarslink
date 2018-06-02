@@ -44,7 +44,7 @@ public class ModuleClassLoader extends URLClassLoader {
     /**
      * java的包必须排除，避免安全隐患
      */
-    public static final String[] DEFAULT_EXCLUDED_PACKAGES = new String[]{"java.", "javax.", "sun.", "oracle."};
+    public static final String[] DEFAULT_EXCLUDED_PACKAGES = new String[]{"java.", "javax.", "jdk.", "sun.", "oracle."};
 
     /**
      * 需要排除的包

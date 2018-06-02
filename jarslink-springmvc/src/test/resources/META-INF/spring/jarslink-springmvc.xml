@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:p="http://www.springframework.org/schema/p"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:mvc="http://www.springframework.org/schema/mvc"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
-         http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd"
+         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+         http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd"
        default-autowire="byName">
 
     <!-- 模块加载引擎 -->
@@ -13,20 +12,20 @@
 
     <!-- 模块管理器 -->
     <bean name="moduleManager" class="com.alipay.jarslink.api.impl.ModuleManagerImpl">
-  		<property name="moduleListenerDispatcher" ref="listenerDispatcher"/>
+        <property name="moduleListenerDispatcher" ref="listenerDispatcher"/>
     </bean>
-    
+
     <!-- 模块服务 -->
     <bean name="moduleService" class="com.alipay.jarslink.api.impl.ModuleServiceImpl">
         <property name="moduleLoader" ref="moduleLoader"></property>
         <property name="moduleManager" ref="moduleManager"></property>
     </bean>
-    
+
     <bean id="listenerDispatcher" class="com.alipay.jarslink.api.ModuleListenerDispatcher"/>
-    
+
     <bean id="moduleHandlerMapping" class="com.alipay.jarslink.support.SpringModuleRequestMappingHandlerMapping">
-    	<property name="moduleListenerDispatcher" ref="listenerDispatcher"/>
+        <property name="moduleListenerDispatcher" ref="listenerDispatcher"/>
     </bean>
-    
+
     <mvc:annotation-driven/>
 </beans>

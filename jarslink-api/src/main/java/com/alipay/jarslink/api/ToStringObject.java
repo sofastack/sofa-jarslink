@@ -17,6 +17,7 @@ import java.io.Serializable;
  * @version $Id: ToStringObject.java, v 0.1 2018年04月01日 12:39 AM tengfei.fang Exp $
  */
 public class ToStringObject implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     /**
      * 默认的ToStringStyle

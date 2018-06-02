@@ -8,6 +8,7 @@ import com.alipay.jarslink.api.Module;
 import com.alipay.jarslink.api.ToStringObject;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * module in runtime
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id: RuntimeModule.java, v 0.1 2018年04月01日 12:25 AM tengfei.fang Exp $
  */
 public class RuntimeModule extends ToStringObject {
+    private static final long serialVersionUID = 1L;
 
     private String name;
 
@@ -29,7 +31,7 @@ public class RuntimeModule extends ToStringObject {
     /**
      * all version module,key:version
      */
-    private ConcurrentHashMap<String, Module> modules = new ConcurrentHashMap();
+    private ConcurrentMap<String, Module> modules = new ConcurrentHashMap<String, Module>();
 
     public Module getModule(String version) {
         return modules.get(version);
@@ -70,7 +72,7 @@ public class RuntimeModule extends ToStringObject {
         return this;
     }
 
-    public ConcurrentHashMap<String, Module> getModules() {
+    public ConcurrentMap<String, Module> getModules() {
         return modules;
     }
 
