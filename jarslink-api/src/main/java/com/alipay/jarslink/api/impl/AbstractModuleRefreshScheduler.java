@@ -18,16 +18,16 @@
 package com.alipay.jarslink.api.impl;
 
 import com.alipay.jarslink.api.Module;
-import com.alipay.jarslink.api.ModuleManager;
 import com.alipay.jarslink.api.ModuleConfig;
 import com.alipay.jarslink.api.ModuleLoader;
+import com.alipay.jarslink.api.ModuleManager;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,9 +45,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static com.alipay.jarslink.api.impl.ModuleUtil.destroyQuietly;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.transformValues;
-import static com.alipay.jarslink.api.impl.ModuleUtil.destroyQuietly;
 
 /**
  * 定时刷新模块

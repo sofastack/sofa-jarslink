@@ -31,6 +31,7 @@ import org.springframework.beans.factory.DisposableBean;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.instanceOf;
@@ -49,8 +50,8 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
     /**
      * 已注册的所有模块,key:moduleName upperCase
      */
-    private final Map<String, RuntimeModule> allModules = new ConcurrentHashMap<String, RuntimeModule>();
-    
+    private final ConcurrentMap<String, RuntimeModule> allModules = new ConcurrentHashMap<String, RuntimeModule>();
+
     private ModuleListenerDispatcher listenerDispatcher;
 
     private RuntimeModule getRuntimeModule(String name) {
@@ -120,7 +121,7 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
         Module oldModule = null;
         //module frist register
         if (runtimeModule.getModules().isEmpty()) {
-        	onRegistered(module);
+            onRegistered(module);
             runtimeModule = new RuntimeModule().withName(name).withDefaultVersion(version).addModule(module);
             allModules.put(name.toUpperCase(), runtimeModule);
         } else {
@@ -193,29 +194,32 @@ public class ModuleManagerImpl implements ModuleManager, DisposableBean {
             throw new ModuleRuntimeException("duplicate module :[" + name + ":" + version + "]");
         }
     }
-    
+
     /**
      * 模块注册完成后调用
+     *
      * @param module
      */
     private void onRegistered(Module module) {
-    	 if(listenerDispatcher != null) {
-         	listenerDispatcher.onRegistered(module);
-         }
+        if (listenerDispatcher != null) {
+            listenerDispatcher.onRegistered(module);
+        }
     }
-    
+
     /**
      * 模块移除注册后调用
+     *
      * @param module
      */
     private void onDeregistered(Module module) {
-    	 if(listenerDispatcher != null && module != null) {
-         	listenerDispatcher.onDeregistered(module);
-         }
+        if (listenerDispatcher != null && module != null) {
+            listenerDispatcher.onDeregistered(module);
+        }
     }
-    
-	@Override
-	public void setModuleListenerDispatcher(ModuleListenerDispatcher dispatcher) {
-		this.listenerDispatcher = dispatcher;
-	}
+
+    @Override
+    public void setModuleListenerDispatcher(ModuleListenerDispatcher dispatcher) {
+        this.listenerDispatcher = dispatcher;
+    }
+
 }

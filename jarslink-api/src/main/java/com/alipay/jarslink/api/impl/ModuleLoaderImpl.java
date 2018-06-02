@@ -17,11 +17,17 @@
  */
 package com.alipay.jarslink.api.impl;
 
-import com.alipay.jarslink.api.*;
+import com.alipay.jarslink.api.ApplicationContextPostProcessor;
+import com.alipay.jarslink.api.Module;
+import com.alipay.jarslink.api.ModuleAware;
+import com.alipay.jarslink.api.ModuleConfig;
+import com.alipay.jarslink.api.ModuleListenerDispatcher;
+import com.alipay.jarslink.api.ModuleLoader;
+import com.alipay.jarslink.api.ModulePostProcessor;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -44,7 +50,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
-import static org.apache.commons.lang.StringUtils.isBlank;
 
 /**
  * 模块加载器实现
@@ -59,8 +64,7 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
     /**
      * Spring bean文件所在目录,不同的路径确保能取到资源
      */
-    private static String[] SPRING_XML_PATTERN = {"classpath*:META-INF/spring/*.xml", "classpath*:*META-INF/spring/*" +
-            ".xml"};
+    private static String[] SPRING_XML_PATTERN = {"classpath*:META-INF/spring/*.xml", "classpath*:*META-INF/spring/*.xml"};
 
     /**
      * 模块版本属性
@@ -88,7 +92,7 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
     private final List<ApplicationContextPostProcessor> applicationContextPostProcessors = new
             CopyOnWriteArrayList<ApplicationContextPostProcessor>();
     private final List<ModulePostProcessor> modulePostProcessors = new CopyOnWriteArrayList<ModulePostProcessor>();
-    
+
     private ModuleListenerDispatcher listenerDispatcher;
 
     @Override
@@ -118,7 +122,7 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
     @Override
     public void unload(Module module) {
         if (module != null) {
-        	onPreDestroy(module);
+            onPreDestroy(module);
             module.destroy();
         }
     }
@@ -206,8 +210,8 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
             tempFileJarURLs) {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
         //获取模块的ClassLoader
-        ClassLoader moduleClassLoader = new ModuleClassLoader(moduleConfig.getModuleUrl(), applicationContext
-                .getClassLoader(), getOverridePackages(moduleConfig));
+        ClassLoader moduleClassLoader = new ModuleClassLoader(moduleConfig.getModuleUrl(), applicationContext.getClassLoader(),
+                getOverridePackages(moduleConfig));
 
         try {
             //把当前线程的ClassLoader切换成模块的
@@ -226,8 +230,8 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
                 //XML方式加载bean
                 ModuleXmlApplicationContext moduleApplicationContext = new ModuleXmlApplicationContext();
                 moduleApplicationContext.setProperties(properties);
-                moduleApplicationContext.setConfigLocations(findSpringConfigs(tempFileJarURLs, moduleClassLoader,
-                        getExclusionConfigeNameList(properties)));
+                String[] configs = findSpringConfigs(tempFileJarURLs, moduleClassLoader, getExclusionConfigeNameList(properties));
+                moduleApplicationContext.setConfigLocations(configs);
                 context = moduleApplicationContext;
             }
             context.setParent(applicationContext);
@@ -287,12 +291,14 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      * @param moduleClassLoader
      * @return
      */
-    private String[] findSpringConfigs(List<String> tempFileJarURLs, ClassLoader moduleClassLoader, List<String>
-            exclusionConfigeNameList) {
+    private String[] findSpringConfigs(List<String> tempFileJarURLs, ClassLoader moduleClassLoader,
+                                       List<String> exclusionConfigeNameList) {
+        PathMatchingResourcePatternResolver pmr = new PathMatchingResourcePatternResolver(moduleClassLoader);
         try {
-            PathMatchingResourcePatternResolver pmr = new PathMatchingResourcePatternResolver(moduleClassLoader);
-            Resource[] resources = ImmutableSet.builder().add(pmr.getResources(SPRING_XML_PATTERN[0])).add(pmr
-                    .getResources(SPRING_XML_PATTERN[1])).build().toArray(new Resource[]{});
+            Resource[] resources = ImmutableSet.<Resource>builder()
+                    .add(pmr.getResources(SPRING_XML_PATTERN[0]))
+                    .add(pmr.getResources(SPRING_XML_PATTERN[1]))
+                    .build().toArray(new Resource[]{});
             checkNotNull(resources, "resources is null");
             checkArgument(resources.length > 0, "resources length is 0");
             // 因为ClassLoader是树形结构，这里会找到ModuleClassLoader以及其父类中所有符合规范的spring配置文件，所以这里需要过滤，只需要Module Jar中的
@@ -311,8 +317,8 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
      * @return
      * @throws IOException
      */
-    private String[] filterURLsIncludedResources(List<String> tempFileJarURLs, Resource[] resources, List<String>
-            exclusionConfigeNameList) throws IOException {
+    private String[] filterURLsIncludedResources(List<String> tempFileJarURLs, Resource[] resources,
+                                                 List<String> exclusionConfigeNameList) throws IOException {
         List<String> configLocations = Lists.newArrayList();
         for (Resource resource : resources) {
             String configLocation = resource.getURL().toString();
@@ -381,7 +387,7 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
                 }
                 continue;
             }
-            if (isBlank(each.getKey())) {
+            if (StringUtils.isBlank(each.getKey())) {
                 continue;
             }
             properties.setProperty(each.getKey(), each.getValue().toString());
@@ -395,19 +401,20 @@ public class ModuleLoaderImpl implements ModuleLoader, ApplicationContextAware {
     }
 
     private void onLoaded(Module module) {
-    	if(listenerDispatcher != null) {
-    		listenerDispatcher.onLoaded(module);
-    	}
+        if (listenerDispatcher != null) {
+            listenerDispatcher.onLoaded(module);
+        }
     }
-    
+
     private void onPreDestroy(Module module) {
-    	if(listenerDispatcher != null) {
-    		listenerDispatcher.onPreDestroy(module);
-    	}
+        if (listenerDispatcher != null) {
+            listenerDispatcher.onPreDestroy(module);
+        }
     }
-    
-	@Override
-	public void setModuleListenerDispatcher(ModuleListenerDispatcher dispatcher) {
-		this.listenerDispatcher = dispatcher;
-	}
+
+    @Override
+    public void setModuleListenerDispatcher(ModuleListenerDispatcher dispatcher) {
+        this.listenerDispatcher = dispatcher;
+    }
+
 }
