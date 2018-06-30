@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/alipay/jarslink.svg?branch=master)](https://travis-ci.org/alipay/jarslink)
 [![Coverage Status](https://coveralls.io/repos/github/alipay/jarslink/badge.svg?branch=master)](https://coveralls.io/github/alipay/jarslink)
-[![Gitter](https://img.shields.io/badge/chat-on%20gitter-orange.svg)](https://gitter.im/sofa-ark/Lobby)
 ![license](https://img.shields.io/badge/license-Apache--2.0-green.svg)
 ![maven](https://img.shields.io/nexus/r/https/oss.sonatype.org/com.alipay.sofa/sofa-jarslink.svg)
 
