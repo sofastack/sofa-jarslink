@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "http://toolkit.alibaba-inc.com/dtd/log4j/log4j.dtd">
+
+<log4j:configuration>
+
+    <appender name="DEFAULT" class="org.apache.log4j.ConsoleAppender">
+        <param name="encoding" value="${file.encoding}"/>
+        <param name="threshold" value="info"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p %-32t - %m%n"/>
+        </layout>
+    </appender>
+
+    <logger name="com.alipay.sofa.jarslink" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="DEFAULT"/>
+    </logger>
+
+</log4j:configuration>

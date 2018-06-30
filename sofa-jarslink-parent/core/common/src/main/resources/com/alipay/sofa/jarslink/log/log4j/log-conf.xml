@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "http://toolkit.alibaba-inc.com/dtd/log4j/log4j.dtd">
+
+<log4j:configuration>
+
+    <appender name="ERROR" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="file" value="${logging.path}/sofa-jarslink/common-error.log"/>
+        <param name="append" value="true"/>
+        <param name="encoding" value="${file.encoding}"/>
+        <param name="threshold" value="error"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p %-32t - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="DEFAULT" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="file" value="${logging.path}/sofa-jarslink/common-default.log"/>
+        <param name="append" value="true"/>
+        <param name="encoding" value="${file.encoding}"/>
+        <param name="threshold" value="info"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p %-32t - %m%n"/>
+        </layout>
+    </appender>
+
+    <logger name="com.alipay.sofa.jarslink" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="ERROR"/>
+        <appender-ref ref="DEFAULT"/>
+    </logger>
+
+</log4j:configuration>
