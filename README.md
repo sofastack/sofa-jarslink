@@ -75,4 +75,4 @@ Jarslink2.0 支持多个 Ark Biz 运行在 SOFAArk 容器之上，从而做到�
 + [代码贡献](./CONTRIBUTING.md): Jarslink 开发参与说明书
 
 # 文档
-+ [Jarslink 用户手册(中文)](http://www.sofastack.tech/sofa-boot/docs/jarslink-readme): Jarslink 用户手册及功能特性说明
++ [Jarslink 用户手册(中文)](http://www.sofastack.tech/sofa-boot/docs/sofa-jarslink-jarslink-readme): Jarslink 用户手册及功能特性说明
