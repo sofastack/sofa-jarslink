@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/alipay/jarslink.svg?branch=master)](https://travis-ci.org/alipay/jarslink)
 [![Coverage Status](https://coveralls.io/repos/github/alipay/jarslink/badge.svg?branch=master)](https://coveralls.io/github/alipay/jarslink)
 ![license](https://img.shields.io/badge/license-Apache--2.0-green.svg)
-![maven](https://img.shields.io/nexus/r/https/oss.sonatype.org/com.alipay.sofa/sofa-jarslink.svg)
+![maven](https://img.shields.io/nexus/s/https/oss.sonatype.org/com.alipay.sofa/sofa-jarslink.svg)
 
 
 Jarslink 2.0 是 [SOFABoot](https://github.com/alipay/sofa-boot) 官方基于 [SOFAArk](https://github.com/alipay/sofa-ark) 开发的功能插件，负责管理多应用在 SOFAArk 容器之上的合并部署，具备如下特性：
