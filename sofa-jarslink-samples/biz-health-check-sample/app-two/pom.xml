@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.alipay.sofa</groupId>
+        <artifactId>sofaboot-dependencies</artifactId>
+        <version>2.5.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>me.qlong.tech</groupId>
+    <artifactId>app-two</artifactId>
+    <version>1.0.0</version>
+
+    <dependencies>
+        <!-- 用于健康检查 -->
+        <dependency>
+            <groupId>com.alipay.sofa</groupId>
+            <artifactId>runtime-sofa-boot-starter</artifactId>
+            <classifier>ark-plugin</classifier>
+        </dependency>
+        <dependency>
+            <groupId>com.alipay.sofa</groupId>
+            <artifactId>runtime-sofa-boot-starter</artifactId>
+        </dependency>
+
+        <!--health check-->
+        <dependency>
+            <groupId>com.alipay.sofa</groupId>
+            <artifactId>healthcheck-sofa-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-web</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                    <id>snapshot</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                    <id>snapshot</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.alipay.sofa</groupId>
+                <artifactId>sofa-ark-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!--goal executed to generate executable-ark-jar -->
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+
+                        <configuration>
+                            <attach>true</attach>
+                            <!--specify destination where executable-ark-jar will be saved, default saved to ${project.build.directory}-->
+                            <outputDirectory>target</outputDirectory>
+
+                            <!--default none-->
+                            <arkClassifier>executable-ark</arkClassifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
