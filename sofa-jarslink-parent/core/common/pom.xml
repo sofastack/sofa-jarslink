@@ -24,18 +24,6 @@
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
 
-        <!-- sofa jarslink -->
-        <dependency>
-            <groupId>com.alipay.sofa</groupId>
-            <artifactId>sofa-jarslink-spi</artifactId>
-        </dependency>
-
-        <!-- sofa ark -->
-        <dependency>
-            <groupId>com.alipay.sofa</groupId>
-            <artifactId>sofa-ark-common</artifactId>
-        </dependency>
-
     </dependencies>
 
 </project>
