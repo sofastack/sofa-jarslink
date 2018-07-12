@@ -34,10 +34,10 @@ Jarslink 2.0 是 [SOFABoot](https://github.com/alipay/sofa-boot) 官方基于 [S
 
 除了合并部署，蚂蚁金服很多业务场景需要模块的热部署，即在应用运行时，需要动态替换某特定模块而不影响其他模块的正常运行。
 
-Jarslink2.0  正是为了解决诸如此类的问题，它是基于 SOFAArk 开发的 Ark Plugin，用于管理多应用合并部署。在了解 Jarslink2.0 之前，你需要提前了解 SOFAArk 框架。关于 SOFAArk 可以访问[链接](https://alipay.github.io/sofastack.github.io/)获取更多详细信息。
+Jarslink2.0  正是为了解决诸如此类的问题，它是基于 SOFAArk 开发的 Ark Plugin，用于管理多应用合并部署。在了解 Jarslink2.0 之前，你需要提前了解 SOFAArk 框架。关于 SOFAArk 可以访问[链接](http://www.sofastack.tech/sofa-boot/docs/sofa-ark-readme)获取更多详细信息。
 
 # 原理
-Jarslink2.0 是一款基于 SOFAArk 开发的 [Ark Plugin](https://alipay.github.io/sofastack.github.io/docs/ark-plugin.html) 。假设你已经对 SOFAArk 有一定的了解，很容易知道，应用被打包成 [Ark Biz](https://alipay.github.io/sofastack.github.io/docs/ark-biz.html) 的形式运行在 SOFAArk 容器之上。SOFABoot 或者 Spring Boot 应用，甚至普通的模块都可以借助 SOFAArk 插件打包成一个标准的 Ark Biz 包。
+Jarslink2.0 是一款基于 SOFAArk 开发的 [Ark Plugin](http://www.sofastack.tech/sofa-boot/docs/sofa-ark-ark-plugin) 。假设你已经对 SOFAArk 有一定的了解，很容易知道，应用被打包成 [Ark Biz](http://www.sofastack.tech/sofa-boot/docs/sofa-ark-ark-biz) 的形式运行在 SOFAArk 容器之上。SOFABoot 或者 Spring Boot 应用，甚至普通的模块都可以借助 SOFAArk 插件打包成一个标准的 Ark Biz 包。
 
 Jarslink2.0 支持多个 Ark Biz 运行在 SOFAArk 容器之上，从而做到多应用的合并部署。应用可以通过注解的形式快速发布服务或者引用其他应用发布的服务，达到相互通信的目的。下图是运行时多应用合并部署结构图：
 
@@ -66,10 +66,10 @@ Jarslink2.0 支持多个 Ark Biz 运行在 SOFAArk 容器之上，从而做到�
 </dependency>
 ```
 # 快速开始
-* [如何创建 SOFABoot 应用](http://www.sofastack.tech/sofa-boot/docs/jarslink-app-demo)
-* [如何使用 Jarslink 多应用动态部署](http://www.sofastack.tech/sofa-boot/docs/jarslink-deploy-demo)
-* [如何使用跨应用通信](http://www.sofastack.tech/sofa-boot/docs/jarslink-invocation-demo)
-* [如何集成 SOFABoot 健康检查](http://www.sofastack.tech/sofa-boot/docs/jarslink-health-demo)
+* [如何创建 SOFABoot 应用](http://www.sofastack.tech/sofa-boot/docs/sofa-jarslink-jarslink-app-demo)
+* [如何使用 Jarslink 多应用动态部署](http://www.sofastack.tech/sofa-boot/docs/sofa-jarslink-jarslink-deploy-demo)
+* [如何使用跨应用通信](http://www.sofastack.tech/sofa-boot/docs/sofa-jarslink-jarslink-invocation-demo)
+* [如何集成 SOFABoot 健康检查](http://www.sofastack.tech/sofa-boot/docs/sofa-jarslink-jarslink-health-demo)
 
 # 贡献
 + [代码贡献](./CONTRIBUTING.md): Jarslink 开发参与说明书
