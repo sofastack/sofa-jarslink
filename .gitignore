@@ -5,3 +5,4 @@ pom.xml.bak
 .DS_Store
 .settings
 .classpath
+logs/

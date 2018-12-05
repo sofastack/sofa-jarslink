@@ -50,8 +50,8 @@ public class SwitchCommand extends AbstractCommand {
         String bizVersion = versionCommandOption.getArgs()[0];
         Biz biz = bizManagerService.getBiz(bizName, bizVersion);
         if (biz != null) {
-            if (biz.getBizState() == BizState.UNRESOLVED || biz.getBizState() != BizState.RESOLVED
-                || biz.getBizState() != BizState.BROKEN) {
+            if (biz.getBizState() != BizState.ACTIVATED
+                && biz.getBizState() != BizState.DEACTIVATED) {
                 LOGGER.info(String.format("The specified biz's state must not be %s.",
                     biz.getBizState()));
                 return String
