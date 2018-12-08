@@ -73,7 +73,7 @@ public class CommandTest extends BaseTest {
         Assert.assertTrue(response.contains("bizState=\'activated\'"));
 
         response = commandHandler.handleCommand("switch -b -n sample-biz -v 1.0.0");
-        Assert.assertTrue(response.contains("The specified biz's state must not be activated."));
+        Assert.assertTrue(response.contains("Biz:'sample-biz:1.0.0' is activated."));
 
         response = commandHandler.handleCommand("uninstall -b -v 1.0.0 -name sample-biz");
         Assert.assertTrue(response.contains("Uninstall biz:'sample-biz:1.0.0' success."));
