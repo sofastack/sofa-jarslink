@@ -38,12 +38,6 @@
             <artifactId>sofa-ark-springboot-starter</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.alipay.sofa</groupId>
-            <artifactId>sofa-jarslink-ark-starter</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
-        </dependency>
-
         <!-- web 应用 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -55,18 +49,6 @@
             <groupId>me.qlong.tech</groupId>
             <artifactId>facade</artifactId>
             <version>1.0.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.alipay.sofa</groupId>
-            <artifactId>sofa-ark-all</artifactId>
-            <version>0.6.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
     </dependencies>
