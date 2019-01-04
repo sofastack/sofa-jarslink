@@ -21,6 +21,7 @@ import com.alipay.sofa.ark.common.util.AssertUtils;
 import com.alipay.sofa.ark.common.util.EnvironmentUtils;
 import com.alipay.sofa.ark.common.util.StringUtils;
 import com.alipay.sofa.ark.spi.model.Biz;
+import com.alipay.sofa.jarslink.runtime.service.BizServiceHolder;
 import com.alipay.sofa.jarslink.spi.command.CommandOption;
 import com.alipay.sofa.jarslink.spi.command.CommandType;
 import com.alipay.sofa.jarslink.spi.constant.Constants;
@@ -75,7 +76,7 @@ public class InstallCommand extends AbstractCommand {
                 public void run() {
                     try {
                         bizManagerService.registerBiz(biz);
-                        biz.start(new String[] {});
+                        biz.start(BizServiceHolder.getArguments());
                         LOGGER.info(String.format("Install Biz:\'%s\' success.", biz.getIdentity()));
                     } catch (Throwable throwable) {
                         LOGGER.error(String.format("Install Biz:\'%s\' fail.", biz.getIdentity()),

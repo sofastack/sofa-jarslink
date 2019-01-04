@@ -34,6 +34,7 @@ public class BizServiceHolder {
 
     private static AtomicBoolean     setBizManager = new AtomicBoolean(false);
     private static AtomicBoolean     setBizFactory = new AtomicBoolean(false);
+    private static String[]          arguments;
 
     public static void setBizManagerService(BizManagerService bizManagerService) {
         AssertUtils.assertNotNull(bizManagerService, "BizManagerService must not be null.");
@@ -57,4 +58,11 @@ public class BizServiceHolder {
         return BizServiceHolder.bizFactoryService;
     }
 
+    public static String[] getArguments() {
+        return arguments;
+    }
+
+    public static void setArguments(String[] arguments) {
+        BizServiceHolder.arguments = arguments;
+    }
 }

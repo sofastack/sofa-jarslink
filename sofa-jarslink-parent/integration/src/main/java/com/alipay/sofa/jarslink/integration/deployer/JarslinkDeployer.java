@@ -50,6 +50,7 @@ public class JarslinkDeployer implements BizDeployer {
         this.arguments = args;
         BizServiceHolder.setBizManagerService(bizManagerService);
         BizServiceHolder.setBizFactoryService(bizFactoryService);
+        BizServiceHolder.setArguments(arguments);
     }
 
     @Override
