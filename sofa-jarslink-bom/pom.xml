@@ -13,7 +13,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <sofa.ark.version>0.4.0-SNAPSHOT</sofa.ark.version>
+        <sofa.ark.version>0.5.2</sofa.ark.version>
         <sofa.common.tools.version>1.0.12</sofa.common.tools.version>
         <log4j.version>1.7.21</log4j.version>
         <commons.io.version>2.5</commons.io.version>
