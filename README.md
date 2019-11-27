@@ -1,6 +1,6 @@
 # 简介
 
-[![Build Status](https://travis-ci.org/sofastack/sofa-jarslink.svg?branch=master)](https://travis-ci.org/sofastack/jarslink)
+[![Build Status](https://travis-ci.org/sofastack/sofa-jarslink.svg?branch=master)](https://travis-ci.org/sofastack/sofa-jarslink)
 [![Coverage Status](https://coveralls.io/repos/github/sofastack/sofa-jarslink/badge.svg?branch=master)](https://coveralls.io/github/sofastack/sofa-jarslink)
 ![license](https://img.shields.io/badge/license-Apache--2.0-green.svg)
 ![maven](https://img.shields.io/nexus/s/https/oss.sonatype.org/com.alipay.sofa/sofa-jarslink.svg)
