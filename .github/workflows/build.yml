@@ -25,4 +25,4 @@ jobs:
         run: mvn clean install -DskipTests=false -Dmaven.javadoc.skip=false -B -V
           && sh ./check_format.sh
       - name: Cobertura
-        uses: mvn test cobertura:cobertura coveralls:report
+        run: mvn test cobertura:cobertura coveralls:report
