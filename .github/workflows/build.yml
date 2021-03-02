@@ -26,6 +26,6 @@ jobs:
           && sh ./check_format.sh
           && mvn test cobertura:cobertura coveralls:report
       - name: Coveralls
-          uses: coverallsapp/github-action@master
-          with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
