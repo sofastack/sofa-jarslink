@@ -24,5 +24,8 @@ jobs:
       - name: Build with Maven 3.2.5
         run: mvn clean install -DskipTests=false -Dmaven.javadoc.skip=false -B -V
           && sh ./check_format.sh
-      - name: Cobertura
-        run: mvn test cobertura:cobertura coveralls:report
+          && mvn test cobertura:cobertura coveralls:report
+      - name: Coveralls
+          uses: coverallsapp/github-action@master
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
