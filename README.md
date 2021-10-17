@@ -7,7 +7,7 @@
 
 This project is no longer in active development, and is currently in maintenance mode. All the existing features have been merged into [SOFAArk](https://github.com/sofastack/sofa-ark) and we highly recommend that you use [SOFAArk](https://github.com/sofastack/sofa-ark) directly.
 
-本项目已不再继续添加新功能，处于维护模式；所有已有功能已被合并进 [SOFAArk](https://github.com/sofastack/sofa-ark) ， **我们推荐您直接使用 [SOFAArk](https://github.com/sofastack/sofa-ark)**
+本项目已不再继续添加新功能，处于维护模式；本项目已有功能已被合并进 [SOFAArk](https://github.com/sofastack/sofa-ark) ， **我们推荐您直接使用 [SOFAArk](https://github.com/sofastack/sofa-ark)**
 
 ---
 
