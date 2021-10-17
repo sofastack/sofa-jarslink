@@ -5,7 +5,7 @@
 ![license](https://img.shields.io/badge/license-Apache--2.0-green.svg)
 ![maven](https://img.shields.io/nexus/s/https/oss.sonatype.org/com.alipay.sofa/sofa-jarslink.svg)
 
-This project is no longer in active development, and is currently in maintenance mode. All the existing features have been merged into [SOFAArk](https://github.com/sofastack/sofa-ark) and we highly recommend that you use [SOFAArk](https://github.com/sofastack/sofa-ark) directly.
+This project is no longer in active development, and is currently in maintenance mode. All the existing features have been merged into [SOFAArk](https://github.com/sofastack/sofa-ark) and we highly recommend that you use [SOFAArk](https://github.com/sofastack/sofa-ark) instead.
 
 本项目已不再继续添加新功能，处于维护模式；本项目已有功能已被合并进 [SOFAArk](https://github.com/sofastack/sofa-ark) ， **我们推荐您直接使用 [SOFAArk](https://github.com/sofastack/sofa-ark)**
 
