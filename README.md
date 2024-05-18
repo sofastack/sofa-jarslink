@@ -7,7 +7,7 @@
 
 This project is no longer in active development, and is currently in maintenance mode. All the existing features have been merged into [SOFAArk](https://github.com/sofastack/sofa-ark) as part of modular development framework [Koupleless](https://koupleless.io), and we highly recommend that you use **[Koupleless](https://koupleless.io)** instead.
 
-本项目已不再继续添加新功能，处于维护模式；本项目已有功能已被合并进 [Koupleless](https://koupleless.io) ， **我们推荐您直接使用 [Koupleless](https://koupleless.io)**
+本项目已不再继续添加新功能，处于维护模式；本项目已有功能已被合并进 [Koupleless](https://koupleless.io)，并作为模块化研发框架和平台 [Koupleless](https://koupleless.io) 的能力之一， **我们推荐您直接使用 [Koupleless](https://koupleless.io)**
 
 ---
 
